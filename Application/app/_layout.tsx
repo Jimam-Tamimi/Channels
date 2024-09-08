@@ -27,19 +27,14 @@ export default function Layout() {
     // InterExtraLight: require("../assets/fonts/Inter/static/Inter_18pt-ExtraLight.ttf"),
     // InterThin: require("../assets/fonts/Inter/static/Inter_18pt-Thin.ttf")
   });
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
   useEffect(() => {
 
     if (loaded) {
       SplashScreen.hideAsync();
-      if (!isLoggedIn) {
-        router.replace("/auth")
-      } else {
-        router.replace("/")
-      }
+
     }
 
-  }, [loaded, isLoggedIn]);
+  }, [loaded]);
 
 
 
