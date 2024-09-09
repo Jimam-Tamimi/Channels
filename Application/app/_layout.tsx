@@ -1,4 +1,4 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, NavigationContainer, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { router, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -43,9 +43,9 @@ export default function Layout() {
   }
 
   return  (
-    
-    <Stack  screenOptions={{ headerShown: true }}>
-      <Stack.Screen name="(drawer)" />
+
+    <Stack  screenOptions={{ headerShown: true,   }}>
+      <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
       <Stack.Screen name="auth" options={{ headerShown: false }} />
     </Stack>
 

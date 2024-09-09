@@ -42,7 +42,7 @@ const Button: React.FC<SignInButtonProps> = ({ title = 'Sign In', ...props }) =>
         onPressOut={handlePressOut}
         style={styles.pressable}
       >
-        <Text style={styles.buttonText}>{title}</Text>
+        <Text  style={styles.buttonText}>{title}</Text>
       </Pressable>
     </Animated.View>
   );
@@ -60,8 +60,9 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
+    letterSpacing: 2
   },
 });
 

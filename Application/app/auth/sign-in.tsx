@@ -19,10 +19,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import Fontisto from "@expo/vector-icons/Fontisto";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { Feather, FontAwesome } from "@expo/vector-icons";
-import { Link } from "expo-router";
+import { FontAwesome } from "@expo/vector-icons";
+import { Link, router } from "expo-router";
 import { Image } from "expo-image";
-import Input from "@/components/Input";
+import Input from "@/components/utils/Input";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -30,8 +30,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import SocialLogin from "./components/SocialLogin";
-import Button from "@/components/Button";
-export default function Auth() {
+import Button from "@/components/utils/Button";
+export default function SignIn() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
 
   const insets = useSafeAreaFrame();
@@ -77,29 +77,30 @@ export default function Auth() {
       <View className="flex-col items-center justify-center flex-1 w-full ">
         <Image
           contentFit="cover"
-          source={require("../../assets/images/New folder/1.jpg")}
+          source={require("../../assets/images/wallpaperflare.com_wallpaper.jpg")}
+          // source={require("../../assets/images/New folder/4.jpg")}
+
           style={[styles.image, StyleSheet.absoluteFill]}
         />
         <View className="absolute top-0 w-full h-full bg-black opacity-55 "></View>
 
-        <View className="container w-full max-w-full gap-20">
+        <View className="container w-full max-w-full gap-24">
           <View className="gap-3">
             <Text className="text-2xl font-bold tracking-widest text-[#fffafc] opacity-75">
-              NEW HERE?
+              WELCOME
             </Text>
             <Text
               style={{ letterSpacing: 8 }}
-              className="text-6xl font-bold leading-[1.30]   text-white"
+              className="text-6xl font-bold leading-[1.35]   text-white"
             >
-              Create An Account
+              Sign In To Continue
             </Text>
             <Text className="font-semibold tracking-[2]  text-white">
-              Already Have One?
-              {/* Already Have An Account? */}
-              <Link className="" href={"/auth/"}>
+              Don't Have An Account?
+              <Link className="" href={"/auth/sign-up"}>
                 <Text className="font-bold text-[rgba(235,37,96,0.91)]">
                   {" "}
-                  Sign In
+                  Sign Up
                 </Text>
               </Link>
             </Text>
@@ -108,15 +109,8 @@ export default function Auth() {
           <View className="gap-6">
             <Input
               placeholderTextColor={"white"}
-              placeholder="@Username"
-              inputMode="text"
-              rightElement={<Feather name="at-sign" size={21} color="white" />}
-            />
-
-            <Input
-              placeholderTextColor={"white"}
               placeholder="Email"
-              inputMode="email"
+              keyboardType="email-address"
               rightElement={<Fontisto name="email" size={20} color={"white"} />}
             />
 
@@ -132,44 +126,8 @@ export default function Auth() {
                     onPress={handlePress}
                   >
                     {/* <View className='absolute'>
-                      <MaterialCommunityIcons name="form-textbox-password" size={21} color="white" />
-                    </View> */}
-                    <Animated.View
-                      style={[eyeAnimatedStyle, { position: "absolute" }]}
-                    >
-                      <FontAwesome6 name="eye" size={20} color="white" />
-                    </Animated.View>
-
-                    <Animated.View
-                      style={[
-                        eyeLowVisionAnimatedStyle,
-                        { position: "absolute" },
-                      ]}
-                    >
-                      <FontAwesome6
-                        name="eye-low-vision"
-                        size={20}
-                        color="white"
-                      />
-                    </Animated.View>
-                  </Pressable>
-                </>
-              }
-            />
-            <Input
-              autoCapitalize={"none"}
-              autoCorrect={false}
-              placeholder="Confirm Password"
-              secureTextEntry={isPasswordHidden}
-              rightElement={
-                <>
-                  <Pressable
-                    className="relative items-end justify-center"
-                    onPress={handlePress}
-                  >
-                    {/* <View className='absolute'>
-                      <MaterialCommunityIcons name="form-textbox-password" size={21} color="white" />
-                    </View> */}
+                    <MaterialCommunityIcons name="form-textbox-password" size={21} color="white" />
+                  </View> */}
                     <Animated.View
                       style={[eyeAnimatedStyle, { position: "absolute" }]}
                     >
@@ -193,26 +151,15 @@ export default function Auth() {
               }
             />
 
-            {/* <Pressable
-                onPress={(e) => console.log(e)}
-                className={`bg-[rgba(235,37,96,0.62)]   rounded duration-300 transition-all ease-in-out active:bg-[rgba(235,37,96,0.91)] py-2.5 w-full active:scale-95 `}
-              >
-                <Text
-                  className={`  w-full text-center text-white text-lg m-auto font-bold `}
-                >
-                  Sign In
-                </Text>
-              </Pressable> */}
-            <Button title="Sign Up" />
-
-            <View className="mt-1">
-              <Text className="self-center text-lg font-bold tracking-widest text-white active:text-[rgba(235,37,96,0.91)] duration-300 transition-all ease-in-out active:scale-95">
-                Forgot Password?
-              </Text>
+            <Button title="Sign In" />
+            <View className="self-center mt-3"> 
+                <Text onPress={e => router.push("/auth/sign-up")} className="text-lg font-bold tracking-widest text-white active:text-[rgba(235,37,96,0.91)] duration-300 transition-all ease-in-out  ">
+                  Forgot Password?
+                </Text> 
             </View>
             <View
               className="flex-row items-center justify-between "
-              style={{ marginTop: 10 }}
+              style={{ marginTop: 20 }}
             >
               <View
                 className="rounded-full"
