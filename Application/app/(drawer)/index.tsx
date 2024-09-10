@@ -8,7 +8,11 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaFrame } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaFrame,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import React, { useEffect, useState } from "react";
 import { Link, Redirect, router } from "expo-router";
@@ -30,6 +34,8 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import Avatar from "@/components/utils/Avater";
+import Conversation from "@/components/drawer/Conversation";
 export default function Home() {
   useEffect(() => {
     setTimeout(() => {
@@ -57,18 +63,25 @@ export default function Home() {
     };
   });
 
-  const handlePressIn = () => {
-    scale.value = withTiming(0.9, { duration: 200 });
-    progress.value = withTiming(1, { duration: 200 });
-  };
-
-  const handlePressOut = () => {
-    scale.value = withTiming(1, { duration: 200 });
-    progress.value = withTiming(0, { duration: 200 });
-  };
+  const [conversations, setConversations] = useState([
+    1,
+    2,
+    2,
+    ,
+    3,
+    3,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+  ]);
 
   return (
-    <View style={{ paddingHorizontal: 15 }}>
+    <View style={{ paddingHorizontal: 15, flex: 1 }}>
       <Image
         contentFit="cover"
         source={require("../../assets/images/New folder/9.jpg")}
@@ -86,7 +99,7 @@ export default function Home() {
       <View
         style={[
           StyleSheet.absoluteFillObject,
-          { backgroundColor: "black", opacity: 0.55 },
+          { backgroundColor: "black", opacity: 0.7 },
         ]}
       ></View>
 
@@ -114,7 +127,7 @@ export default function Home() {
               paddingVertical: 6,
               paddingHorizontal: 13,
               flex: 1,
-              borderRadius:100
+              borderRadius: 100,
             }}
             style={{
               fontSize: 15,
@@ -126,109 +139,46 @@ export default function Home() {
               <MaterialIcons name="person-search" size={20} color={"white"} />
             }
           />
-          <Animated.View style={[{borderRadius: 100, height:"100%", width:40, justifyContent: "center", alignItems: 'center'}, animatedStyle]}>
+          <Animated.View
+            style={[
+              {
+                borderRadius: 100,
+                height: "100%",
+                width: 40,
+                justifyContent: "center",
+                alignItems: "center",
+              },
+              animatedStyle,
+            ]}
+          >
             <Pressable
               className="p-2"
-              
-              onPressIn={() => handlePressIn()}
-              onPressOut={() => handlePressOut()}
+              onPressIn={() => {
+                scale.value = withTiming(0.9, { duration: 200 });
+                progress.value = withTiming(1, { duration: 200 });
+              }}
+              onPressOut={() => {
+                scale.value = withTiming(1, { duration: 200 });
+                progress.value = withTiming(0, { duration: 200 });
+              }}
             >
               <FontAwesome6 name="plus" size={22} color="white" />
             </Pressable>
           </Animated.View>
         </KeyboardAvoidingView>
-
-        <View style={{}}>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
-          <Text>Jimam</Text>
+        <View
+          className="flex-1 gap-3 "
+          style={{ paddingBottom: useHeaderHeight() + 50, paddingTop: 15 }}
+        >
+          {conversations.map((conversation, i) => (
+            <Conversation
+              conversationImageUri="https://randomuser.me/api/portraits/men/32.jpg"
+              conversationName="Jimam Tamimi"
+              lastMessage="You: Jimam Tamimi"
+              lastMessageTimestamp="Friday"
+              key={i}
+            />
+          ))}
         </View>
       </ScrollView>
     </View>

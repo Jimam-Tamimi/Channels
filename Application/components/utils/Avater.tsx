@@ -6,15 +6,17 @@ interface AvatarProps {
   size?: number;
   name?: string;
   isActive?: boolean;
+  borderLess?:  boolean;
+
 }
 
-const Avatar: React.FC<AvatarProps> = ({ uri, size = 64, name, isActive = false }) => {
+const Avatar: React.FC<AvatarProps> = ({ uri, size = 64, name, isActive = false, borderLess=false }) => {
   return (
     <View style={styles.container}>
       {/* Avatar Image */}
       <Image
         source={{ uri }}
-        style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]}
+        style={[ { width: size, height: size, borderRadius: size / 2,  borderWidth:  borderLess ? 0 : 1, borderColor: 'gray', }]}
       />
       {/* Active Status Indicator */}
       {isActive && (
@@ -40,11 +42,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
-  },
-  avatar: {
-    borderWidth: 2,
-    borderColor: 'gray',
-  },
+  }, 
   activeIndicator: {
     position: 'absolute',
     backgroundColor: "#0ceb41", 
