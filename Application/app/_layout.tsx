@@ -44,10 +44,12 @@ export default function Layout() {
 
   return  (
 
-    <Stack  screenOptions={{ headerShown: true,   }}>
+    <Stack  screenOptions={{ headerShown: false,   }}>
       <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
       <Stack.Screen name="auth" options={{ headerShown: false }} />
+      <Stack.Screen name="conversations" options={{ headerShown: false }} />
     </Stack>
 
   );
 }
+

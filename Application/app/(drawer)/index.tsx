@@ -4,6 +4,7 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   View,
@@ -81,106 +82,109 @@ export default function Home() {
   ]);
 
   return (
-    <View style={{ paddingHorizontal: 15, flex: 1 }}>
-      <Image
-        contentFit="cover"
-        source={require("../../assets/images/New folder/9.jpg")}
-        // source={require("../../assets/images/New folder/4.jpg")}
+    <>
+ 
+      <View style={{ paddingHorizontal: 15, flex: 1 }}>
+        <Image
+          contentFit="cover"
+          source={require("../../assets/images/New folder/9.jpg")}
+          // source={require("../../assets/images/New folder/4.jpg")}
 
-        style={[
-          {
-            width: Dimensions.get("window").width,
-            height: Dimensions.get("window").height,
-            position: "absolute",
-            overflow: "hidden",
-          },
-        ]}
-      />
-      <View
-        style={[
-          StyleSheet.absoluteFillObject,
-          { backgroundColor: "black", opacity: 0.7 },
-        ]}
-      ></View>
-
-      <ScrollView
-        // style={StyleSheet.absoluteFillObject}
-        style={{ paddingTop: useHeaderHeight() + 20 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <KeyboardAvoidingView
-          behavior={"height"}
-          style={{
-            flex: 1,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
-          <Input
-            placeholderTextColor={"white"}
-            placeholder="Search"
-            inputMode="search"
-            className="text-base"
-            containerStyle={{
-              paddingVertical: 6,
-              paddingHorizontal: 13,
-              flex: 1,
-              borderRadius: 100,
-            }}
-            style={{
-              fontSize: 15,
-              fontWeight: "500",
-              letterSpacing: 1.5,
-              marginLeft: 8,
-            }}
-            leftElement={
-              <MaterialIcons name="person-search" size={20} color={"white"} />
-            }
-          />
-          <Animated.View
-            style={[
-              {
-                borderRadius: 100,
-                height: "100%",
-                width: 40,
-                justifyContent: "center",
-                alignItems: "center",
-              },
-              animatedStyle,
-            ]}
-          >
-            <Pressable
-              className="p-2"
-              onPressIn={() => {
-                scale.value = withTiming(0.9, { duration: 200 });
-                progress.value = withTiming(1, { duration: 200 });
-              }}
-              onPressOut={() => {
-                scale.value = withTiming(1, { duration: 200 });
-                progress.value = withTiming(0, { duration: 200 });
-              }}
-            >
-              <FontAwesome6 name="plus" size={22} color="white" />
-            </Pressable>
-          </Animated.View>
-        </KeyboardAvoidingView>
+          style={[
+            {
+              width: Dimensions.get("window").width,
+              height: Dimensions.get("window").height,
+              position: "absolute",
+              overflow: "hidden",
+            },
+          ]}
+        />
         <View
-          className="flex-1 gap-3 "
-          style={{ paddingBottom: useHeaderHeight() + 50, paddingTop: 15 }}
+          style={[
+            StyleSheet.absoluteFillObject,
+            { backgroundColor: "black", opacity: 0.7 },
+          ]}
+        ></View>
+
+        <ScrollView
+          // style={StyleSheet.absoluteFillObject}
+          style={{ paddingTop: useHeaderHeight() + 20 }}
+          showsVerticalScrollIndicator={false}
         >
-          {conversations.map((conversation, i) => (
-            <Conversation
-              conversationImageUri="https://randomuser.me/api/portraits/men/32.jpg"
-              conversationName="Jimam Tamimi"
-              lastMessage="You: Jimam Tamimi"
-              lastMessageTimestamp="Friday"
-              key={i}
+          <KeyboardAvoidingView
+            // behavior={"height"}
+            style={{
+              flex: 1,
+              flexDirection: "row",
+              justifyContent: "flex-start",
+              alignItems: "flex-start",
+              gap: 8,
+            }}
+          >
+            <Input
+              placeholderTextColor={"white"}
+              placeholder="Search"
+              inputMode="search"
+              className="text-base"
+              containerStyle={{
+                paddingVertical: 6,
+                paddingHorizontal: 13,
+                flex: 1,
+                borderRadius: 100,
+              }}
+              style={{
+                fontSize: 15,
+                fontWeight: "500",
+                letterSpacing: 1.5,
+                marginLeft: 8,
+              }}
+              leftElement={
+                <MaterialIcons name="person-search" size={20} color={"white"} />
+              }
             />
-          ))}
-        </View>
-      </ScrollView>
-    </View>
+            <Animated.View
+              style={[
+                {
+                  borderRadius: 100,
+                  height: 40,
+                  width: 40,
+                  justifyContent: "center",
+                  alignItems: "center",
+                },
+                animatedStyle,
+              ]}
+            >
+              <Pressable
+                className="p-2"
+                onPressIn={() => {
+                  scale.value = withTiming(0.9, { duration: 200 });
+                  progress.value = withTiming(1, { duration: 200 });
+                }}
+                onPressOut={() => {
+                  scale.value = withTiming(1, { duration: 200 });
+                  progress.value = withTiming(0, { duration: 200 });
+                }}
+              >
+                <FontAwesome6 name="plus" size={22} color="white" />
+              </Pressable>
+            </Animated.View>
+          </KeyboardAvoidingView>
+          <View
+            className="flex-1 gap-3 "
+            style={{ paddingBottom: useHeaderHeight() + 50, paddingTop: 15 }}
+          >
+            {conversations.map((conversation, i) => (
+              <Conversation
+                conversationImageUri="https://randomuser.me/api/portraits/men/32.jpg"
+                conversationName="Jimam Tamimi"
+                lastMessage="You: Jimam Tamimi"
+                lastMessageTimestamp="Friday"
+                key={i}
+              />
+            ))}
+          </View>
+        </ScrollView>
+      </View>
+    </>
   );
 }

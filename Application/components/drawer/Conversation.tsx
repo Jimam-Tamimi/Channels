@@ -7,6 +7,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { router } from "expo-router";
 
 interface AvatarProps {
   conversationImageUri: string;
@@ -34,35 +35,38 @@ const Conversation: React.FC<AvatarProps> = (props) => {
   });
 
   return (
-    <Animated.View style={[animatedStyle, { flex: 1, gap: 13, borderRadius: 2 }]}>
+    <Animated.View
+      style={[
+        animatedStyle,
+        { flex: 1, gap: 13, borderRadius: 2, paddingVertical: 9, paddingHorizontal: 10 },
+      ]}
+    >
       <Pressable
         style={{ flex: 1, gap: 13 }}
-        className="bg-[#32364517] py-3 px-3 flex-row items-center   "
+        className="bg-[#32364517]  flex-row items-center   "
         onPressIn={() => {
-          scale.value = withTiming(0.95, { duration: 200 });
+          scale.value = withTiming(0.97, { duration: 200 });
           progress.value = withTiming(1, { duration: 200 });
         }}
         onPressOut={() => {
           scale.value = withTiming(1, { duration: 200 });
           progress.value = withTiming(0, { duration: 200 });
         }}
+        onPress={() => router.push("/conversations/55")}
       >
         <Avatar uri={props.conversationImageUri} size={53} isActive />
         <View className="justify-between flex-1 " style={{ gap: 5 }}>
           <View className="flex-row justify-between">
-            <Text
-              className="text-white text-[17px] font-semibold"
-              style={{ letterSpacing: 1.5 }}
-            >
+            <Text className="text-white " style={{ letterSpacing: 1.5, fontSize:17, fontWeight:600 }}>
               {props.conversationName}
             </Text>
             <Avatar uri={props.conversationImageUri} size={15} borderLess />
           </View>
           <View className="flex-row justify-between">
-            <Text className="text-sm font-light tracking-wide text-white">
+            <Text style={{ letterSpacing: 0.5, fontSize:12, fontWeight:300 }} className="text-white ">
               {props.lastMessage}
             </Text>
-            <Text className="text-sm tracking-wider text-white">
+            <Text style={{fontSize: 13, }} className="text-sm tracking-wider text-white">
               {props.lastMessageTimestamp}
             </Text>
           </View>

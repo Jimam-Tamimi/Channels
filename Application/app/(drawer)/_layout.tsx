@@ -24,19 +24,20 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <GestureHandlerRootView style={{ flex: 1,  }}>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <Drawer
         screenOptions={({ navigation }) => ({
           drawerStatusBarAnimation: "slide",
           drawerActiveTintColor: "white",
           drawerInactiveTintColor: "white",
           drawerLabelStyle: { marginLeft: -18 },
+          drawerActiveBackgroundColor: "green",
+          headerTransparent: true,
           headerStyle: { backgroundColor: "black" },
           headerTitleStyle: { color: "white" },
-          headerTransparent: true,
-          drawerActiveBackgroundColor: "green",
           headerTintColor: "white",
           headerTitleAlign: "center",
+          
           // Custom header to evenly space the items
           header: () => (
             <View
