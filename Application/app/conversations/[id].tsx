@@ -209,7 +209,7 @@ export default function Conversation() {
       timestamp: "Fri",
       user: "me",
       status: "seen",
-    }, 
+    },
   ]);
 
   // for send message
@@ -222,8 +222,8 @@ export default function Conversation() {
     formState: { errors },
   } = useForm();
   const onSend = (data: any) => {
-    if(!data?.text){
-      return
+    if (!data?.text) {
+      return;
     }
     setMessages((prevState) => [
       ...prevState,
@@ -333,43 +333,57 @@ export default function Conversation() {
                     isActive
                   />
                 </View>
-                <View style={{ maxWidth: "80%" }} className="">
-                  <Text
-                    className={`  px-3 py-2 leading-6 tracking-wider text-white  
-     bg-[#5660e762]
-                    `}
-                    style={{
-                      backgroundColor: message?.user === "me" ? "#5660e762" : "#ff004c70",
+                <View
+                  style={{
+                    backgroundColor:
+                      message?.user === "me" ? "#5660e762" : "#ff004c70",
 
-                      borderBottomLeftRadius:
-                        (messages[i]?.user !== "me" &&
-                          messages[i + 1]?.user === "me") ||
-                        messages[i]?.user === "me"
-                          ? 10
-                          : 0,
-                      borderTopLeftRadius:
-                        (messages[i]?.user !== "me" &&
-                          (messages[i - 1]?.user === "me" || i == 0)) ||
-                        messages[i]?.user === "me"
-                          ? 10
-                          : 0,
-                      borderBottomRightRadius:
-                        messages[i]?.user === "me" &&
-                        messages[i + 1]?.user !== "me"
-                          ? 10
-                          : messages[i]?.user !== "me"
-                          ? 10
-                          : 0,
-                      borderTopRightRadius:
-                        messages[i]?.user === "me" &&
-                        messages[i - 1]?.user !== "me"
-                          ? 10
-                          : messages[i]?.user !== "me"
-                          ? 10
-                          : 0,
-                    }}
+                    borderBottomLeftRadius:
+                      (messages[i]?.user !== "me" &&
+                        messages[i + 1]?.user === "me") ||
+                      messages[i]?.user === "me"
+                        ? 10
+                        : 0,
+                    borderTopLeftRadius:
+                      (messages[i]?.user !== "me" &&
+                        (messages[i - 1]?.user === "me" || i == 0)) ||
+                      messages[i]?.user === "me"
+                        ? 10
+                        : 0,
+                    borderBottomRightRadius:
+                      messages[i]?.user === "me" &&
+                      messages[i + 1]?.user !== "me"
+                        ? 10
+                        : messages[i]?.user !== "me"
+                        ? 10
+                        : 0,
+                    borderTopRightRadius:
+                      messages[i]?.user === "me" &&
+                      messages[i - 1]?.user !== "me"
+                        ? 10
+                        : messages[i]?.user !== "me"
+                        ? 10
+                        : 0,
+                    maxWidth: "80%",
+                  }}
+                  className="px-3 py-2 "
+                >
+                  <Text
+                    className={`   leading-6 tracking-wider text-white  
+                    `}
                   >
                     {message?.text}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      fontWeight: "400",
+                      letterSpacing: 0.5,
+                      textAlign: "right",
+                    }}
+                    className="text-white "
+                  >
+                    4 Sep 2024, 19:25
                   </Text>
                 </View>
                 {message?.status === "seen" ? (
@@ -436,8 +450,12 @@ export default function Conversation() {
                 onChangeText={onChange}
                 value={value}
                 placeholder="Message..."
-                containerStyle={{ borderRadius: 0, paddingHorizontal:15, margin:0 }}
-                style={{paddingRight:10}}
+                containerStyle={{
+                  borderRadius: 0,
+                  paddingHorizontal: 15,
+                  margin: 0,
+                }}
+                style={{ paddingRight: 10 }}
                 multiline
                 rightElement={
                   <Ionicons

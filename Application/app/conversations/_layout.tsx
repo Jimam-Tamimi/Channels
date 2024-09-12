@@ -40,6 +40,7 @@ export default function Layout() {
                   borderBottomColor: "#fff",
                   paddingBottom: 10,
                   paddingTop: insets.top + 5,
+                  backgroundColor: "#00000099"
                 },
               ]}
             >

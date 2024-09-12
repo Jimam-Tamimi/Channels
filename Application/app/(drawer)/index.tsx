@@ -37,6 +37,7 @@ import Animated, {
 } from "react-native-reanimated";
 import Avatar from "@/components/utils/Avater";
 import Conversation from "@/components/drawer/Conversation";
+import AppleStyleSwipeableRow from "@/components/conversations/SwipeAbleRow";
 export default function Home() {
   useEffect(() => {
     setTimeout(() => {
@@ -83,7 +84,6 @@ export default function Home() {
 
   return (
     <>
- 
       <View style={{ paddingHorizontal: 15, flex: 1 }}>
         <Image
           contentFit="cover"
@@ -174,13 +174,16 @@ export default function Home() {
             style={{ paddingBottom: useHeaderHeight() + 50, paddingTop: 15 }}
           >
             {conversations.map((conversation, i) => (
-              <Conversation
-                conversationImageUri="https://randomuser.me/api/portraits/men/32.jpg"
-                conversationName="Jimam Tamimi"
-                lastMessage="You: Jimam Tamimi"
-                lastMessageTimestamp="Friday"
+              <AppleStyleSwipeableRow
                 key={i}
-              />
+              >
+                <Conversation
+                  conversationImageUri="https://randomuser.me/api/portraits/men/32.jpg"
+                  conversationName="Jimam Tamimi"
+                  lastMessage="You: Jimam Tamimi"
+                  lastMessageTimestamp="Friday"
+                />
+              </AppleStyleSwipeableRow>
             ))}
           </View>
         </ScrollView>
