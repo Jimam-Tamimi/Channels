@@ -16,8 +16,8 @@ const Input: React.FC<PropTypes> = (props) => {
         flexDirection: "row",
         justifyContent: "space-between",
         backgroundColor: "#3236458f",
-        paddingHorizontal: 20,
-        paddingVertical: 8,
+        paddingRight: 20,
+
         borderRadius: 6,
         alignItems: "center",
         maxWidth: "100%",
@@ -30,6 +30,11 @@ const Input: React.FC<PropTypes> = (props) => {
         {...props}
         className={` flex-1 text-lg font-semibold tracking-widest text-white `}
         placeholderTextColor={"white"}
+        style={{
+          paddingHorizontal: 20,
+          paddingVertical: 8,
+          paddingRight:5
+        }}
       />
       {props.rightElement}
       {/* <FontAwesome name="eye" size={20} color="white" /> */}

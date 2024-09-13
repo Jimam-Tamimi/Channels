@@ -77,7 +77,7 @@ export default function SignUp() {
       <View className="flex-col items-center justify-center flex-1 w-full ">
         <Image
           contentFit="cover"
-          source={require("../../assets/images/New folder/1.jpg")}
+          source={require("../../assets/images/wallpaperflare.com_wallpaper.jpg")}
           style={[styles.image, StyleSheet.absoluteFill]}
         />
         <View className="absolute top-0 w-full h-full bg-black opacity-55 "></View>

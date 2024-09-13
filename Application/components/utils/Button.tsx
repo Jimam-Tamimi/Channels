@@ -1,13 +1,15 @@
 import React from 'react';
-import { Text, StyleSheet, PressableProps } from 'react-native';
+import { Text, StyleSheet, PressableProps, ActivityIndicator } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, interpolateColor } from 'react-native-reanimated';
 import { Pressable } from 'react-native';
 
 interface SignInButtonProps extends PressableProps {
   title?: string;
+  isLoading?: boolean;
+  disabled?: boolean;
 }
 
-const Button: React.FC<SignInButtonProps> = ({ title = 'Sign In', ...props }) => {
+const Button: React.FC<SignInButtonProps> = ({ title = 'Sign In', isLoading = false, disabled = false, ...props }) => {
   const scale = useSharedValue(1);
   const progress = useSharedValue(0); // Use this to animate the color
 
@@ -24,25 +26,34 @@ const Button: React.FC<SignInButtonProps> = ({ title = 'Sign In', ...props }) =>
     };
   });
 
-  const  handlePressIn =  () => {
-    scale.value = withTiming(0.95, { duration: 250 });
-    progress.value = withTiming(1, { duration: 250 });
-  }
+  const handlePressIn = () => {
+    if (!disabled && !isLoading) {
+      scale.value = withTiming(0.95, { duration: 250 });
+      progress.value = withTiming(1, { duration: 250 });
+    }
+  };
 
-  const  handlePressOut =  () => {
-    scale.value = withTiming(1, { duration: 250 }); 
-    progress.value = withTiming(0, { duration: 250 }); 
-  }
+  const handlePressOut = () => {
+    if (!disabled && !isLoading) {
+      scale.value = withTiming(1, { duration: 250 });
+      progress.value = withTiming(0, { duration: 250 });
+    }
+  };
 
   return (
-    <Animated.View style={[styles.button, animatedStyle]}>
+    <Animated.View style={[styles.button, animatedStyle, (disabled || isLoading) && styles.disabledButton]}>
       <Pressable
         {...props}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
+        disabled={disabled || isLoading}
         style={styles.pressable}
       >
-        <Text  style={styles.buttonText}>{title}</Text>
+        {isLoading ? (
+          <ActivityIndicator  color="white"  />
+        ) :  (
+          <Text style={styles.buttonText}>{title}</Text>
+        )}
       </Pressable>
     </Animated.View>
   );
@@ -62,7 +73,10 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
-    letterSpacing: 2
+    letterSpacing: 2,
+  },
+  disabledButton: {
+    opacity: 0.7, // Make the button look disabled
   },
 });
 

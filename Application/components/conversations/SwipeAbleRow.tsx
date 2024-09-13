@@ -123,7 +123,6 @@ const AppleStyleSwipeableRow: React.FC<PropsWithChildren<unknown>> = ({ children
       
       containerStyle={{
         borderRadius: 2,
-        borderWidth:1  
       }}
       onSwipeableOpen={(direction) => {
         console.log(`Opening swipeable from the ${direction}`);

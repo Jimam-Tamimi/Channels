@@ -1,13 +1,26 @@
-import { DarkTheme, DefaultTheme, NavigationContainer, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { router, Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState } from 'react';
-import 'react-native-reanimated';
-import "../assets/global.css"
+import {
+  DarkTheme,
+  DefaultTheme,
+  NavigationContainer,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import { router, Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect, useState } from "react";
+import "react-native-reanimated";
+import "../assets/global.css";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { removeAuthData } from "@/secure-storage/authStorage";
+import { useAuthRedirect } from "@/hooks/useAuth";
+import { LogBox } from "react-native";
+import { createNotifications, RotateInRotateOut, RotateZIn, SlideInLeftSlideOutRight, ZoomInDownZoomOutDown, ZoomInDownZoomOutUp } from "react-native-notificated";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
+// Ignore all log notifications
+LogBox.ignoreAllLogs();
 export const unstable_settings = {
-  initialRouteName: '(drawer)',
+  initialRouteName: "(drawer)",
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -15,7 +28,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function Layout() {
   const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
 
     // InterBlack: require("../assets/fonts/Inter/static/Inter_18pt-Black.ttf"),
     // InterExtraBold: require("../assets/fonts/Inter/static/Inter_18pt-ExtraBold.ttf"),
@@ -28,28 +41,43 @@ export default function Layout() {
     // InterThin: require("../assets/fonts/Inter/static/Inter_18pt-Thin.ttf")
   });
   useEffect(() => {
-
     if (loaded) {
       SplashScreen.hideAsync();
-
     }
-
   }, [loaded]);
-
-
 
   if (!loaded) {
     return null;
   }
+  const queryClient = new QueryClient();
+  const { NotificationsProvider, useNotifications, ...events } = createNotifications({
+    animationConfig: ZoomInDownZoomOutUp,
+    defaultStylesSettings: {
+      darkMode: true,
+      
+      globalConfig: {
+        bgColor: "#00000090",
+        borderType: "accent"
+      }
+    },
+  });
 
-  return  (
+  return (
+    <GestureHandlerRootView>
+      <NotificationsProvider
 
-    <Stack  screenOptions={{ headerShown: false,   }}>
-      <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-      <Stack.Screen name="auth" options={{ headerShown: false }} />
-      <Stack.Screen name="conversations" options={{ headerShown: false }} />
-    </Stack>
-
+      >
+        <QueryClientProvider client={queryClient}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+            <Stack.Screen name="auth" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="conversations"
+              options={{ headerShown: false }}
+            />
+          </Stack>
+        </QueryClientProvider>
+      </NotificationsProvider>
+    </GestureHandlerRootView>
   );
 }
-

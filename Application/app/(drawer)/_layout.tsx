@@ -2,29 +2,38 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Drawer } from "expo-router/drawer";
 import { useState, useEffect } from "react";
 import { router, SplashScreen } from "expo-router";
-import { Text, View, StyleSheet } from "react-native";
+import {
+  Text,
+  View,
+  StyleSheet,
+  Pressable,
+  ActivityIndicator,
+  Dimensions,
+} from "react-native";
 import DrawerComponent from "@/components/DrawerComponent";
 import { AntDesign, Entypo, MaterialCommunityIcons } from "@expo/vector-icons";
 import Avatar from "@/components/utils/Avater";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
+import { useAuthRedirect, useSignOut } from "@/hooks/useAuth";
+import { Image } from "expo-image";
+import LoadingScreen from "@/components/utils/LoadingScreen";
 export default function RootLayout() {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const insets = useSafeAreaInsets();
+  const isLoading = useAuthRedirect();
 
-  useEffect(() => {
-    setTimeout(() => {
-      if (!isLoggedIn) {
-        router.replace("/auth");
-      } else {
-        router.replace("/");
-      }
-    });
-    return () => {};
-  }, []);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const insets = useSafeAreaInsets();
+  const signOut = useSignOut();
+
+  if (isLoading) {
+    return <LoadingScreen />
+  }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <View style={{ flex: 1 }}>
       <Drawer
         screenOptions={({ navigation }) => ({
           drawerStatusBarAnimation: "slide",
@@ -37,7 +46,7 @@ export default function RootLayout() {
           headerTitleStyle: { color: "white" },
           headerTintColor: "white",
           headerTitleAlign: "center",
-          
+
           // Custom header to evenly space the items
           header: () => (
             <View
@@ -54,11 +63,13 @@ export default function RootLayout() {
               {/* Title */}
               <Text style={styles.headerTitle}>Conversations</Text>
               {/* Avatar */}
-              <Avatar
-                uri="https://randomuser.me/api/portraits/men/32.jpg"
-                size={40}
-                isActive
-              />
+              <Pressable onPress={signOut}>
+                <Avatar
+                  uri="https://randomuser.me/api/portraits/men/32.jpg"
+                  size={40}
+                  isActive
+                />
+              </Pressable>
             </View>
           ),
         })}
@@ -101,7 +112,7 @@ export default function RootLayout() {
           }}
         />
       </Drawer>
-    </GestureHandlerRootView>
+    </View>
   );
 }
 

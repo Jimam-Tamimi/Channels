@@ -19,7 +19,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000000"
-      }
+      },
+      "package": "com.anonymous.Application"
     },
     "web": {
       "bundler": "metro",
@@ -28,11 +29,19 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
     },
-
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "940a75ca-a334-45ba-aa5a-e7a8cc15a01c"
+      }
+    }
   }
 }

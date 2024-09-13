@@ -20,7 +20,7 @@ import Fontisto from "@expo/vector-icons/Fontisto";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { FontAwesome } from "@expo/vector-icons";
-import { Link, router } from "expo-router";
+import { Link, router, useRouter } from "expo-router";
 import { Image } from "expo-image";
 import Input from "@/components/utils/Input";
 import Animated, {
@@ -31,6 +31,9 @@ import Animated, {
 } from "react-native-reanimated";
 import SocialLogin from "./components/SocialLogin";
 import Button from "@/components/utils/Button";
+import AuthForm from "@/components/auth/AuthForm";
+import { useSignIn } from "@/hooks/useAuth";
+import { createNotifications } from "react-native-notificated";
 export default function SignIn() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
 
@@ -39,35 +42,34 @@ export default function SignIn() {
     return () => {};
   }, []);
 
-  // for view password animation
-  const [isPasswordHidden, setIsPasswordHidden] = useState(true);
+  const router = useRouter();
+  const { useNotifications, ...events } = createNotifications();
 
-  const eyeScale = useSharedValue(1);
-  const eyeLowVisionScale = useSharedValue(0);
+  const { notify } = useNotifications();
 
-  const handlePress = () => {
-    // Toggle the state
-    setIsPasswordHidden((prevState) => !prevState);
+  const { mutate: signIn, isLoading, isError } = useSignIn();
 
-    // Animate the scales
-    eyeScale.value = withTiming(isPasswordHidden ? 0 : 1, { duration: 300 });
-    eyeLowVisionScale.value = withTiming(isPasswordHidden ? 1 : 0, {
-      duration: 300,
+  const onSubmit = (data: { username: string; password: string }) => {
+    signIn(data, {
+      onSuccess: () => {
+        notify("success", {
+          params: {
+            title: "Success",
+            description: "Successfully Signed In",
+          },
+        });
+        router.push("/(drawer)/");
+      },
+      onError: () => {
+        notify("info", {
+          params: {
+            title: "Failed",
+            description: "Unable To Sign In",
+          },
+        });
+      },
     });
   };
-
-  // Animated styles for the icons
-  const eyeAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: eyeScale.value }],
-    };
-  });
-
-  const eyeLowVisionAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: eyeLowVisionScale.value }],
-    };
-  });
 
   return (
     <KeyboardAvoidingView
@@ -77,7 +79,7 @@ export default function SignIn() {
       <View className="flex-col items-center justify-center flex-1 w-full ">
         <Image
           contentFit="cover"
-          source={require("../../assets/images/wallpaperflare.com_wallpaper.jpg")}
+          source={require("../../assets/images/New folder/1.jpg")}
           // source={require("../../assets/images/New folder/4.jpg")}
 
           style={[styles.image, StyleSheet.absoluteFill]}
@@ -107,55 +109,15 @@ export default function SignIn() {
           </View>
 
           <View className="gap-6">
-            <Input
-              placeholderTextColor={"white"}
-              placeholder="Email"
-              keyboardType="email-address"
-              rightElement={<Fontisto name="email" size={20} color={"white"} />}
-            />
+            <AuthForm onSubmit={onSubmit} isSignIn isLoading={isLoading} />
 
-            <Input
-              autoCapitalize={"none"}
-              autoCorrect={false}
-              placeholder="Password"
-              secureTextEntry={isPasswordHidden}
-              rightElement={
-                <>
-                  <Pressable
-                    className="relative items-end justify-center"
-                    onPress={handlePress}
-                  >
-                    {/* <View className='absolute'>
-                    <MaterialCommunityIcons name="form-textbox-password" size={21} color="white" />
-                  </View> */}
-                    <Animated.View
-                      style={[eyeAnimatedStyle, { position: "absolute" }]}
-                    >
-                      <FontAwesome6 name="eye" size={20} color="white" />
-                    </Animated.View>
-
-                    <Animated.View
-                      style={[
-                        eyeLowVisionAnimatedStyle,
-                        { position: "absolute" },
-                      ]}
-                    >
-                      <FontAwesome6
-                        name="eye-low-vision"
-                        size={20}
-                        color="white"
-                      />
-                    </Animated.View>
-                  </Pressable>
-                </>
-              }
-            />
-
-            <Button title="Sign In" />
-            <View className="self-center mt-3"> 
-                <Text onPress={e => router.push("/auth/sign-up")} className="text-lg font-bold tracking-widest text-white active:text-[rgba(235,37,96,0.91)] duration-300 transition-all ease-in-out  ">
-                  Forgot Password?
-                </Text> 
+            <View className="self-center mt-3">
+              <Text
+                onPress={(e) => router.push("/auth/sign-up")}
+                className="text-lg font-bold tracking-widest text-white active:text-[rgba(235,37,96,0.91)] duration-300 transition-all ease-in-out  "
+              >
+                Forgot Password?
+              </Text>
             </View>
             <View
               className="flex-row items-center justify-between "

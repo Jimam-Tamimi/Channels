@@ -38,7 +38,9 @@ import Animated, {
 import Avatar from "@/components/utils/Avater";
 import Conversation from "@/components/drawer/Conversation";
 import AppleStyleSwipeableRow from "@/components/conversations/SwipeAbleRow";
+import { useAuthRedirect } from "@/hooks/useAuth";
 export default function Home() {
+
   useEffect(() => {
     setTimeout(() => {
       // router.push("/(drawer)/conversations")
