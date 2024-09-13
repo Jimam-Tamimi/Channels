@@ -21,6 +21,7 @@ import { useHeaderHeight } from "@react-navigation/elements";
 import { useAuthRedirect, useSignOut } from "@/hooks/useAuth";
 import { Image } from "expo-image";
 import LoadingScreen from "@/components/utils/LoadingScreen";
+import { notify } from "react-native-notificated";
 export default function RootLayout() {
   const isLoading = useAuthRedirect();
 
@@ -63,7 +64,15 @@ export default function RootLayout() {
               {/* Title */}
               <Text style={styles.headerTitle}>Conversations</Text>
               {/* Avatar */}
-              <Pressable onPress={signOut}>
+              <Pressable onPress={e => {
+                notify("success", {
+                  params: {
+                    title: "Success",
+                    description: "Successfully Signed Out",
+                  },
+                });
+                router.push("/auth/sign-in");
+              }}>
                 <Avatar
                   uri="https://randomuser.me/api/portraits/men/32.jpg"
                   size={40}

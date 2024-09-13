@@ -34,6 +34,8 @@ import Button from "@/components/utils/Button";
 import AuthForm from "@/components/auth/AuthForm";
 import { useSignIn } from "@/hooks/useAuth";
 import { createNotifications } from "react-native-notificated";
+import { useForm } from "react-hook-form";
+import { AxiosError } from "axios";
 export default function SignIn() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
 
@@ -47,6 +49,13 @@ export default function SignIn() {
 
   const { notify } = useNotifications();
 
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    setError,
+  } = useForm();
   const { mutate: signIn, isLoading, isError } = useSignIn();
 
   const onSubmit = (data: { username: string; password: string }) => {
@@ -60,13 +69,22 @@ export default function SignIn() {
         });
         router.push("/(drawer)/");
       },
-      onError: () => {
-        notify("info", {
-          params: {
-            title: "Failed",
-            description: "Unable To Sign In",
-          },
-        });
+      onError: (error: any) => {
+        if (error?.response?.status == 401 && error?.response?.data?.detail) {
+          notify("error", {
+            params: {
+              title: "Sign In Failed",
+              description: error?.response?.data?.detail,
+            },
+          });
+        } else {
+          notify("error", {
+            params: {
+              title: "Sign In Failed",
+              description: "Something Went Wrong!",
+            },
+          });
+        }
       },
     });
   };
@@ -108,8 +126,16 @@ export default function SignIn() {
             </Text>
           </View>
 
-          <View className="gap-6">
-            <AuthForm onSubmit={onSubmit} isSignIn isLoading={isLoading} />
+          <View className="gap-2">
+            <AuthForm
+              control={control}
+              handleSubmit={handleSubmit}
+              onSubmit={onSubmit}
+              errors={errors}
+              watch={watch}
+              isLoading={isLoading}
+              isSignIn
+            />
 
             <View className="self-center mt-3">
               <Text

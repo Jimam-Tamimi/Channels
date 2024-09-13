@@ -29,8 +29,9 @@ export const useSignUp = () => {
     onSuccess: async (data) => {
       await storeAuthData(data); // Store JWT on success
     },
-    onError: (error) => {
-      // console.error("Sign-up error:", error);
+    onError: (error:AxiosError) => {
+      // console.error("Sign-up error:", error.response);
+     
     },
   });
 };

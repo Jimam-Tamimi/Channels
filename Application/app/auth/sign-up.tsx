@@ -20,7 +20,7 @@ import Fontisto from "@expo/vector-icons/Fontisto";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { Feather, FontAwesome } from "@expo/vector-icons";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { Image } from "expo-image";
 import Input from "@/components/utils/Input";
 import Animated, {
@@ -31,6 +31,11 @@ import Animated, {
 } from "react-native-reanimated";
 import SocialLogin from "./components/SocialLogin";
 import Button from "@/components/utils/Button";
+import AuthForm from "@/components/auth/AuthForm";
+import { useSignIn, useSignUp } from "@/hooks/useAuth";
+import { createNotifications } from "react-native-notificated";
+import { AxiosError } from "axios";
+import { Controller, useForm } from "react-hook-form";
 export default function SignUp() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
 
@@ -69,6 +74,66 @@ export default function SignUp() {
     };
   });
 
+  const { useNotifications, ...events } = createNotifications();
+  const { notify } = useNotifications();
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    setError,
+  } = useForm();
+  const { mutate: signUp } = useSignUp();
+  const { mutate: signIn,  isError } = useSignIn();
+  const [isFormSubmitting, setIsFormSubmitting] = useState(false)
+  const onSubmit = (data: any) => {
+    setIsFormSubmitting(true)
+    signUp(data, {
+      onSuccess: () => {
+        signIn(data, {
+          onSuccess: () => {
+            notify("success", {
+              params: {
+                title: "Success",
+                description: "Successfully Signed In",
+              },
+            });
+            router.replace("/(drawer)/");
+          },
+          onError: () => {
+            notify("error", {
+              params: {
+                title: "Failed",
+                description: "Unable To Sign In",
+              },
+            });
+          },
+        });
+      },
+      onError: (error: AxiosError) => {
+        const handleErrors = (errorData: any) => {
+          Object.keys(errorData).forEach((key) => {
+            if (errorData[key]) {
+              errorData[key].forEach((message: string) => {
+                console.log(key, message);
+                setError(key as any, { message });
+              });
+            }
+          });
+        };
+        if (error.response && error.response.status === 400) {
+          const errorData = error.response.data;
+          handleErrors(errorData);
+        }
+      },
+      onSettled: ()=> {
+    setIsFormSubmitting(false)
+
+      }
+    });
+  };
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -105,94 +170,15 @@ export default function SignUp() {
             </Text>
           </View>
 
-          <View className="gap-6">
-            <Input
-              placeholderTextColor={"white"}
-              placeholder="@Username"
-              inputMode="text"
-              rightElement={<Feather name="at-sign" size={21} color="white" />}
+          <View className="gap-2">
+            <AuthForm
+              control={control}
+              handleSubmit={handleSubmit}
+              onSubmit={onSubmit}
+              watch={watch}
+              errors={errors}
+              isLoading={isFormSubmitting}
             />
-
-            <Input
-              placeholderTextColor={"white"}
-              placeholder="Email"
-              inputMode="email"
-              rightElement={<Fontisto name="email" size={20} color={"white"} />}
-            />
-
-            <Input
-              autoCapitalize={"none"}
-              autoCorrect={false}
-              placeholder="Password"
-              secureTextEntry={isPasswordHidden}
-              rightElement={
-                <>
-                  <Pressable
-                    className="relative items-end justify-center"
-                    onPress={handlePress}
-                  >
-                    {/* <View className='absolute'>
-                      <MaterialCommunityIcons name="form-textbox-password" size={21} color="white" />
-                    </View> */}
-                    <Animated.View
-                      style={[eyeAnimatedStyle, { position: "absolute" }]}
-                    >
-                      <FontAwesome6 name="eye" size={20} color="white" />
-                    </Animated.View>
-
-                    <Animated.View
-                      style={[
-                        eyeLowVisionAnimatedStyle,
-                        { position: "absolute" },
-                      ]}
-                    >
-                      <FontAwesome6
-                        name="eye-low-vision"
-                        size={20}
-                        color="white"
-                      />
-                    </Animated.View>
-                  </Pressable>
-                </>
-              }
-            />
-            <Input
-              autoCapitalize={"none"}
-              autoCorrect={false}
-              placeholder="Confirm Password"
-              secureTextEntry={isPasswordHidden}
-              rightElement={
-                <>
-                  <Pressable
-                    className="relative items-end justify-center"
-                    onPress={handlePress}
-                  >
-                    {/* <View className='absolute'>
-                      <MaterialCommunityIcons name="form-textbox-password" size={21} color="white" />
-                    </View> */}
-                    <Animated.View
-                      style={[eyeAnimatedStyle, { position: "absolute" }]}
-                    >
-                      <FontAwesome6 name="eye" size={20} color="white" />
-                    </Animated.View>
-
-                    <Animated.View
-                      style={[
-                        eyeLowVisionAnimatedStyle,
-                        { position: "absolute" },
-                      ]}
-                    >
-                      <FontAwesome6
-                        name="eye-low-vision"
-                        size={20}
-                        color="white"
-                      />
-                    </Animated.View>
-                  </Pressable>
-                </>
-              }
-            />
-
             {/* <Pressable
                 onPress={(e) => console.log(e)}
                 className={`bg-[rgba(235,37,96,0.62)]   rounded duration-300 transition-all ease-in-out active:bg-[rgba(235,37,96,0.91)] py-2.5 w-full active:scale-95 `}
@@ -203,8 +189,6 @@ export default function SignUp() {
                   Sign In
                 </Text>
               </Pressable> */}
-            <Button title="Sign Up" />
-
             <View className="mt-1">
               <Text className="self-center text-lg font-bold tracking-widest text-white active:text-[rgba(235,37,96,0.91)] duration-300 transition-all ease-in-out active:scale-95">
                 Forgot Password?
