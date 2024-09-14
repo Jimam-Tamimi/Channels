@@ -12,7 +12,7 @@ import "react-native-reanimated";
 import "../assets/global.css";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { removeAuthData } from "@/secure-storage/authStorage";
-import { useAuthRedirect } from "@/hooks/useAuth";
+import { useAuthRedirect } from "@/hooks/auth";
 import { LogBox } from "react-native";
 import { createNotifications, RotateInRotateOut, RotateZIn, SlideInLeftSlideOutRight, ZoomInDownZoomOutDown, ZoomInDownZoomOutUp } from "react-native-notificated";
 import { GestureHandlerRootView } from "react-native-gesture-handler";

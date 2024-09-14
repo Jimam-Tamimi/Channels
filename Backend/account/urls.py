@@ -2,10 +2,12 @@
 
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .apis import  CustomTokenVerifyView, CustomTokenObtainPairView, CustomTokenRefreshView, UserViewSet
+from .apis import  CustomTokenVerifyView, CustomTokenObtainPairView, CustomTokenRefreshView, ProfileViewSet, UserViewSet
 from rest_framework.routers import SimpleRouter
 router = SimpleRouter()
+
 router.register(r'users', UserViewSet)
+router.register(r'profiles', ProfileViewSet, basename='profile')
 
 urlpatterns = [
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),

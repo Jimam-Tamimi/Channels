@@ -32,7 +32,7 @@ import Animated, {
 import SocialLogin from "./components/SocialLogin";
 import Button from "@/components/utils/Button";
 import AuthForm from "@/components/auth/AuthForm";
-import { useSignIn } from "@/hooks/useAuth";
+import { useSignIn } from "@/hooks/auth";
 import { createNotifications } from "react-native-notificated";
 import { useForm } from "react-hook-form";
 import { AxiosError } from "axios";

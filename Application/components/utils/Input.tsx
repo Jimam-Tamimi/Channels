@@ -18,6 +18,7 @@ interface PropTypes extends React.ComponentProps<typeof TextInput> {
   error?:  any;
   containerStyle?: ViewStyle;
   style?: StyleProp<TextStyle>;
+  noError?:boolean;
 }
 
 const Input: React.FC<PropTypes> = (props) => {
@@ -56,9 +57,9 @@ const Input: React.FC<PropTypes> = (props) => {
         {/* <MaterialCommunityIcons name="form-textbox-password" size={21} color="white" /> */}
       </View>
 
-      {/* {props?.error && ( */}
+      {!props?.noError && (
         <Text style={{ color: "#fc0303", top: 1, fontSize: 12, fontWeight: "700", letterSpacing:1 }}>{toCamelCase(props?.error?.message ? props?.error?.message  : '' )}</Text>
-      {/* )} */}
+      )}
     </View>
   );
 };

@@ -455,6 +455,7 @@ export default function Conversation() {
                   paddingHorizontal: 15,
                   margin: 0,
                 }}
+                noError={true}
                 style={{ paddingRight: 10 }}
                 multiline
                 rightElement={

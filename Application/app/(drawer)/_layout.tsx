@@ -18,7 +18,7 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
-import { useAuthRedirect, useSignOut } from "@/hooks/useAuth";
+import { useAuthRedirect, useSignOut } from "@/hooks/auth";
 import { Image } from "expo-image";
 import LoadingScreen from "@/components/utils/LoadingScreen";
 import { notify } from "react-native-notificated";

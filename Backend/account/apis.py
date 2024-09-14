@@ -4,8 +4,8 @@ from time import sleep
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserSerializer
-from .models import User
+from .serializers import ProfileSerializer, UserSerializer
+from .models import Profile, User
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
@@ -18,6 +18,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 class UserViewSet(ModelViewSet):
     queryset = get_user_model().objects.all()
     serializer_class = UserSerializer
+    
+
    
  
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -84,3 +86,20 @@ class CustomTokenVerifyView(TokenVerifyView):
             data['user'] = user_serializer.data
 
         return Response(data, status=status.HTTP_200_OK)
+    
+    
+
+
+class ProfileViewSet(ModelViewSet):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]  # Ensure the user is logged in to access
+
+    def get_queryset(self):
+        """Limit profiles to only the current user."""
+        return Profile.objects.filter(user=self.request.user.id)
+        # return super().get_queryset()
+
+    def perform_create(self, serializer):
+        """Override to associate the Profile with the logged-in user."""
+        serializer.save(user=self.request.user)

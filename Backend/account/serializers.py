@@ -1,7 +1,7 @@
 # your_app/serializers.py
 
 from rest_framework.serializers import ModelSerializer, IntegerField
-from .models import User
+from .models import User, Profile
 
 class UserSerializer(ModelSerializer):
     id = IntegerField(read_only=True)  
@@ -20,3 +20,12 @@ class UserSerializer(ModelSerializer):
             password=validated_data['password']
         )
         return user
+    
+     
+
+class ProfileSerializer(ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['id', 'user', 'first_name', 'last_name', 'profile_image', 'date_of_birth', 'active_status', 'last_active', 'timestamp']
+        read_only_fields = ['id', 'user', 'active_status', 'last_active', 'timestamp']  # Optional fields that should not be modified
+

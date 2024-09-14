@@ -3,6 +3,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.validators import EmailValidator
+from django.dispatch import receiver
+from django.utils import timezone
+
 
 class UserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
@@ -42,3 +45,24 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_short_name(self):
         return self.username
+ 
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=False, blank=False)
+    first_name = models.CharField(max_length=50, null=True, blank=False)
+    last_name = models.CharField(max_length=50, null=True, blank=False)
+    profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
+    date_of_birth = models.DateField(null=True, blank=True)
+    active_status = models.BooleanField(default=False)  # Track if the user is currently active
+    last_active = models.DateTimeField(default=timezone.now)  # Track when the user was last active
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+
+    class Meta:
+        verbose_name = 'Profile'
+        verbose_name_plural = 'Profiles'
+        
+        
+        

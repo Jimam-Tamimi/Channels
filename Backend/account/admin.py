@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User
+from .models import Profile, User
 
 class UserAdminConfig(UserAdmin):
     model = User
@@ -10,8 +10,7 @@ class UserAdminConfig(UserAdmin):
     list_filter = ('is_staff', 'is_active')
     fieldsets = (
         (None, {'fields': ('username', 'email', 'password')}),
-        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'user_permissions')}),
-        ('Important dates', {'fields': ('last_login', 'date_joined')}),
+        
     )
     add_fieldsets = (
         (None, {
@@ -24,3 +23,13 @@ class UserAdminConfig(UserAdmin):
     filter_horizontal = ('user_permissions',)
 
 admin.site.register(User, UserAdminConfig)
+
+# Customize the Profile admin view
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'first_name', 'last_name', 'active_status', 'last_active', 'timestamp')  # Fields to display in list view
+    search_fields = ('user__username', 'first_name', 'last_name')  # Enable search by these fields
+    list_filter = ('active_status', 'timestamp')  # Add filters for easy filtering
+    readonly_fields = ('timestamp', 'last_active')  # Make these fields read-only
+
+# Register the Profile model in the admin site
+admin.site.register(Profile, ProfileAdmin)

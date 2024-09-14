@@ -1,5 +1,6 @@
 import {
   Dimensions,
+  FlatList,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -36,11 +37,11 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Avatar from "@/components/utils/Avater";
-import Conversation from "@/components/drawer/Conversation";
+import Conversation from "@/components/drawer/Channel";
 import AppleStyleSwipeableRow from "@/components/conversations/SwipeAbleRow";
-import { useAuthRedirect } from "@/hooks/useAuth";
+import { useAuthRedirect } from "@/hooks/auth";
+import { useChannels } from "@/hooks/channel";
 export default function Home() {
-
   useEffect(() => {
     setTimeout(() => {
       // router.push("/(drawer)/conversations")
@@ -67,22 +68,10 @@ export default function Home() {
     };
   });
 
-  const [conversations, setConversations] = useState([
-    1,
-    2,
-    2,
-    ,
-    3,
-    3,
-    4,
-    4,
-    4,
-    4,
-    4,
-    4,
-    4,
-    4,
-  ]);
+  
+
+  const { data: channels, isLoading, isError, error } = useChannels();
+
 
   return (
     <>
@@ -175,18 +164,22 @@ export default function Home() {
             className="flex-1 gap-3 "
             style={{ paddingBottom: useHeaderHeight() + 50, paddingTop: 15 }}
           >
-            {conversations.map((conversation, i) => (
-              <AppleStyleSwipeableRow
-                key={i}
-              >
-                <Conversation
-                  conversationImageUri="https://randomuser.me/api/portraits/men/32.jpg"
-                  conversationName="Jimam Tamimi"
-                  lastMessage="You: Jimam Tamimi"
-                  lastMessageTimestamp="Friday"
-                />
-              </AppleStyleSwipeableRow>
-            ))}
+    
+
+            <FlatList
+              data={channels}
+              keyExtractor={(channel) => channel.id.toString()}
+              renderItem={({ item }) => (
+                <AppleStyleSwipeableRow key={item.id}>
+                  <Conversation
+                    {...item}
+                    // profiles={item.channel_profiles
+                    //   .map((profile) => profile.user.username)
+                    //   .join(", ")}  
+                  />
+                </AppleStyleSwipeableRow>
+              )}
+            />
           </View>
         </ScrollView>
       </View>
