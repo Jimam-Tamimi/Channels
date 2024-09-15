@@ -1,12 +1,12 @@
 import {
-  AuthType,
   getAuthData,
   removeAuthData,
   storeAuthData,
 } from "@/secure-storage/authStorage";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { router, usePathname } from "expo-router";
 import * as SecureStore from "expo-secure-store";
+import { AuthType } from "./auth";
 
 const api = axios.create({
   baseURL: `${process.env.EXPO_PUBLIC_API_URL}/api`, // Set this in your environment variables
@@ -19,12 +19,17 @@ const api = axios.create({
 api.interceptors.response.use(
   async (config) => {
     const auth = await getAuthData();
+    setTimeout(() => {
+      
+      console.log({auth})
+    }, 3000);
     if (auth?.access) {
       config.headers.Authorization = `JWT ${auth?.access}`;
     }
     return config;
   },
   async (error) => {
+    // console.log(error.response)
     const originalRequest = error.config;
     if (error.response?.status === 401 && !originalRequest._retry) {
       const newAuth = await refreshAuth();

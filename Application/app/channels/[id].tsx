@@ -224,7 +224,6 @@ export default function Conversation() {
     formState: { errors },
   } = useForm();
 
-
   // Scroll to bottom when keyboard is shown
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -253,12 +252,14 @@ export default function Conversation() {
       return;
     }
     if (socket) {
-      socket.send(
-        JSON.stringify({
-          text: "Message from chat",
-          channel_id: 1,
-        })
-      );
+      setTimeout(() => {
+        socket.send(
+          JSON.stringify({
+            text: "Message from chat",
+            channel_id: 1,
+          })
+        );
+      }, 3000);
       setMessages((prevState) => [
         ...prevState,
         {

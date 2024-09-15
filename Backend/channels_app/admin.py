@@ -1,8 +1,8 @@
 from django.contrib import admin
-from .models import Channel, Message
+from .models import Conversation, Message
 
-@admin.register(Channel)
-class ChannelAdmin(admin.ModelAdmin):
+@admin.register(Conversation)
+class ConversationAdmin(admin.ModelAdmin):
     list_display = ('name', 'timestamp', 'is_group')
     search_fields = ('name',)
     filter_horizontal = ('profiles',)  # To display ManyToMany relationships in the admin panel
@@ -18,14 +18,17 @@ class ChannelAdmin(admin.ModelAdmin):
 
 
  
-
 @admin.register(Message)
+
 class MessageAdmin(admin.ModelAdmin):
-    list_display = ('text', 'profile', 'channel', 'status', 'timestamp')
-    list_filter = ('status', 'channel', 'profile')
-    search_fields = ('text', 'profile__user__username', 'channel__name')
+    list_display = ("status", 'text', 'sender', 'conversation',  'timestamp')
+    list_filter = ( 'conversation', 'sender')
+    search_fields = ('text', 'sender__user__username', 'conversation__name')
     date_hierarchy = 'timestamp'
     ordering = ('-timestamp',)
-
-    # Optionally add more configuration for detail view
- 
+    
+    fieldsets = (
+        (None, {
+            'fields': ('text', 'sender', 'conversation', 'seen_by', 'delivered_to')
+        }),
+    )

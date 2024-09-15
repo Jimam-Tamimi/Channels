@@ -8,12 +8,14 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { Href, router } from "expo-router";
-import { ChannelType } from "@/api-calls/channel";
+import { ConversationType } from "@/api-calls/channels";
+import { useProfile } from "@/hooks/auth";
+import { getAuthData } from "@/secure-storage/authStorage";
  
-const Channel: React.FC<ChannelType> = (props) => {
+const Conversation: React.FC<ConversationType> = (props) => {
+  // code for animation part
   const scale = useSharedValue(1);
-  const progress = useSharedValue(0); // Use this to animate the color
-
+  const progress = useSharedValue(0); 
   const animatedStyle = useAnimatedStyle(() => {
     const backgroundColor = interpolateColor(
       progress.value,
@@ -27,6 +29,22 @@ const Channel: React.FC<ChannelType> = (props) => {
     };
   });
 
+
+
+  // fetching profile data and last message data
+
+
+  
+  if(props.is_group){
+    // fetch profile data for group
+  } else { 
+    
+    const { data: profile, isLoading, isError, error } = useProfile('1');
+    
+  }
+
+  
+  
   return (
     <Animated.View
       style={[
@@ -69,4 +87,4 @@ const Channel: React.FC<ChannelType> = (props) => {
   );
 };
 
-export default Channel;
+export default Conversation;

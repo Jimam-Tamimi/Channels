@@ -1,6 +1,6 @@
 import json
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from .models import Profile, Message, Channel
+from .models import Profile, Message, Conversation
 from .serializers import MessageSerializer
 from channels.db import database_sync_to_async
 from channels.layers import get_channel_layer
@@ -33,25 +33,25 @@ class ProfileConsumer(AsyncJsonWebsocketConsumer):
 
     async def receive_json(self, content):
         message_text = content.get('text')
-        channel_id = content.get('channel_id')
+        conversation_id = content.get('conversation_id')
         print(content)
-        if not message_text or not channel_id:
+        if not message_text or not conversation_id:
             await self.send_json({'error': 'Invalid message format'})
             return
 
  
-        channel = await database_sync_to_async(Channel.objects.get)(id=channel_id)
+        conversation = await database_sync_to_async(Conversation.objects.get)(id=conversation_id)
         message =  await database_sync_to_async(Message.objects.create)(
             text=message_text,
-            profile=self.profile,
-            channel=channel,
+            sender=self.profile,
+            conversation=conversation,
             status='PENDING'
         )
  
 
         # Send message to each connected profile
-        channel_profiles = await self.get_channel_profiles(channel_id)
-        for profile in channel_profiles:
+        conversation_profiles = await self.get_channel_profiles(conversation_id)
+        for profile in conversation_profiles:
             if profile.active_channel_name:
                 print(profile.active_channel_name)
                 await self.channel_layer.send(
@@ -61,39 +61,14 @@ class ProfileConsumer(AsyncJsonWebsocketConsumer):
                         'message': MessageSerializer(message).data
                     }
                 ) 
+ 
 
     @database_sync_to_async
-    def get_profile(self, profile_id):
-        return Profile.objects.get(id=profile_id)
+    def get_channel_profiles(self, conversation_id):
+        conversation = Conversation.objects.get(id=conversation_id)
+        return list(conversation.profiles.all())
 
-    @database_sync_to_async
-    def save_profile(self, profile):
-        profile.save()
-
-    @database_sync_to_async
-    def get_channel(self, channel_id):
-        return Channel.objects.get(id=channel_id)
-
-    @database_sync_to_async
-    def get_channel_name(self, profile):
-        return f"{profile.user.username}_channel_name_{profile.user.id}"
-
-    @database_sync_to_async
-    def get_channel_profiles(self, channel_id):
-        channel = Channel.objects.get(id=channel_id)
-        return list(channel.profiles.all())
-
-    @database_sync_to_async
-    def create_message(self, text, profile_id, channel_id):
-        profile = Profile.objects.get(id=profile_id)
-        channel = Channel.objects.get(id=channel_id)
-        return Message.objects.create(
-            text=text,
-            profile=profile,
-            channel=channel,
-            status='PENDING'
-        )
-
+ 
     async def chat_message(self, event):
         # Send the message to WebSocket
         print(event)

@@ -1,12 +1,8 @@
 // src/utils/secureStorage.ts
+import { AuthType } from '@/api-calls/auth';
 import * as SecureStore from 'expo-secure-store';
 
 // Store token object securely
-export type AuthType = {
-  access: string;
-  refresh: string
-}
-
 
 export const storeAuthData = async (auth: AuthType) => {
   await SecureStore.setItemAsync('auth', JSON.stringify(auth));

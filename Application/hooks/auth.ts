@@ -1,5 +1,5 @@
 // /src/hooks/useAuth.ts
-import { signIn, signUp } from "@/api-calls/auth";
+import { AuthType, fetchProfileById, signIn, signUp } from "@/api-calls/auth";
 import {
   getAuthData,
   removeAuthData,
@@ -9,13 +9,13 @@ import { AxiosError } from "axios";
 import { router, useRouter } from "expo-router";
 import { jwtDecode } from "jwt-decode";
 import { useEffect, useState } from "react";
-import { useMutation } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import * as SecureStore from "expo-secure-store";
 import { refreshAuth } from "@/api-calls/api";
 
 export const useSignIn = () => {
   return useMutation(signIn, {
-    onSuccess: async (data) => {
+    onSuccess: async (data:AuthType) => {
       // console.log(data)
       await storeAuthData(data); // Store JWT on success
     },
@@ -83,4 +83,8 @@ export const useAuthRedirect = () => {
   }, [router]);
   return isLoading;
 
+};
+
+export const useProfile = (id: string) => {
+  return useQuery(['profile', id], () => fetchProfileById(id));
 };

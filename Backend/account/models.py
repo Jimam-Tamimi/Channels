@@ -47,6 +47,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.username
  
 
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=False, blank=False)
     first_name = models.CharField(max_length=50, null=True, blank=False)
@@ -59,10 +60,8 @@ class Profile(models.Model):
 
     @property
     def active_status(self):
-        """Returns a list of active profiles (where active_status is True)."""
-        return True if self.active_channel_name != None else False
- 
-    
+        """Returns whether the profile is considered active."""
+        return self.active_channel_name is not None
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
@@ -70,6 +69,5 @@ class Profile(models.Model):
     class Meta:
         verbose_name = 'Profile'
         verbose_name_plural = 'Profiles'
-        
         
         

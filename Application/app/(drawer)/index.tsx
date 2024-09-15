@@ -37,11 +37,11 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Avatar from "@/components/utils/Avater";
-import Conversation from "@/components/drawer/Channel";
+import Conversation from "@/components/drawer/Conversation";
 import AppleStyleSwipeableRow from "@/components/conversations/SwipeAbleRow";
 import { useAuthRedirect } from "@/hooks/auth";
-import { useChannels } from "@/hooks/channel";
 import useWebSocketHandler from "@/hooks/webSocketHandler";
+import { useConversation, useConversations } from "@/hooks/channels";
 export default function Home() {
   useEffect(() => {
     setTimeout(() => {
@@ -71,7 +71,6 @@ export default function Home() {
 
   
 
-  const { data: channels, isLoading, isError, error } = useChannels();
 
 
 
@@ -87,6 +86,10 @@ export default function Home() {
 
   
   
+
+
+  const { data: conversations, isLoading, isError, error } = useConversations();
+
 
   return (
     <>
@@ -182,7 +185,7 @@ export default function Home() {
     
 
             <FlatList
-              data={channels}
+              data={conversations}
               keyExtractor={(channel) => channel.id.toString()}
               renderItem={({ item }) => (
                 <AppleStyleSwipeableRow key={item.id}>
