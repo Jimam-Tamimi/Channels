@@ -41,6 +41,7 @@ import Conversation from "@/components/drawer/Channel";
 import AppleStyleSwipeableRow from "@/components/conversations/SwipeAbleRow";
 import { useAuthRedirect } from "@/hooks/auth";
 import { useChannels } from "@/hooks/channel";
+import useWebSocketHandler from "@/hooks/webSocketHandler";
 export default function Home() {
   useEffect(() => {
     setTimeout(() => {
@@ -72,6 +73,20 @@ export default function Home() {
 
   const { data: channels, isLoading, isError, error } = useChannels();
 
+
+
+
+  const [messages, setMessages] = useState<string[]>([]);
+
+  const handleChatMessage = (data:any) => {
+    console.log("from index page",data)
+  };
+
+  // Handle WebSocket messages regardless of screen focus
+  useWebSocketHandler('CHAT', handleChatMessage, false);
+
+  
+  
 
   return (
     <>

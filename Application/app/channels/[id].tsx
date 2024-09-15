@@ -19,6 +19,8 @@ import Input from "@/components/utils/Input";
 import { Controller, useForm } from "react-hook-form";
 import Animated from "react-native-reanimated";
 import { Image } from "expo-image";
+import useWebSocketHandler from "@/hooks/webSocketHandler";
+import { useWebSocket } from "@/context/WebSocketContext";
 
 export interface MessageType {
   id: string | number;
@@ -37,175 +39,175 @@ export default function Conversation() {
   const [messages, setMessages] = useState<MessageType[]>([
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "other",
       status: "pending",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "other",
       status: "pending",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "me",
       status: "seen",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "me",
       status: "seen",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "me",
       status: "seen",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "me",
       status: "delivered",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "other",
       status: "pending",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "other",
       status: "pending",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "me",
       status: "seen",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "me",
       status: "seen",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "me",
       status: "seen",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "me",
       status: "delivered",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "other",
       status: "pending",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "other",
       status: "pending",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "me",
       status: "seen",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "me",
       status: "seen",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "me",
       status: "seen",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "me",
       status: "delivered",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "other",
       status: "pending",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "other",
       status: "pending",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "other",
       status: "pending",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "other",
       status: "pending",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "me",
       status: "seen",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "me",
       status: "seen",
     },
     {
       id: 45,
-      text: `Hi. How are you doing to day. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
+      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
       timestamp: "Fri",
       user: "me",
       status: "seen",
@@ -221,27 +223,7 @@ export default function Conversation() {
     reset,
     formState: { errors },
   } = useForm();
-  const onSend = (data: any) => {
-    if (!data?.text) {
-      return;
-    }
-    setMessages((prevState) => [
-      ...prevState,
-      {
-        id: prevState.length + 1,
-        text: data?.text,
-        timestamp: "Fri",
-        user: "me",
-        status: "pending",
-      },
-    ]);
-    reset();
 
-    setTimeout(
-      () => scrollViewRef.current?.scrollToEnd({ animated: true }),
-      100
-    ); // Small timeout to ensure new message is rendered
-  };
 
   // Scroll to bottom when keyboard is shown
   useEffect(() => {
@@ -257,6 +239,46 @@ export default function Conversation() {
       keyboardDidShowListener.remove(); // Cleanup the event listener
     };
   }, []);
+
+  const handleChatMessage = (data: any) => {
+    console.log("from channel page", data);
+  };
+
+  // Handle WebSocket messages regardless of screen focus
+  useWebSocketHandler("CHAT", handleChatMessage, true);
+
+  const { socket } = useWebSocket();
+  const onSend = (data: any) => {
+    if (!data?.text) {
+      return;
+    }
+    if (socket) {
+      socket.send(
+        JSON.stringify({
+          text: "Message from chat",
+          channel_id: 1,
+        })
+      );
+      setMessages((prevState) => [
+        ...prevState,
+        {
+          id: prevState.length + 1,
+          text: data?.text,
+          timestamp: "Fri",
+          user: "me",
+          status: "pending",
+        },
+      ]);
+      reset();
+
+      setTimeout(
+        () => scrollViewRef.current?.scrollToEnd({ animated: true }),
+        100
+      );
+    } else {
+      console.error("Socket not initialized or message/channelId is empty");
+    }
+  };
   return (
     <>
       <View

@@ -7,7 +7,7 @@ class ChannelViewSet(ModelViewSet):
     serializer_class = ChannelSerializer
 
     def get_queryset(self):
-        return Channel.objects.prefetch_related('channel_profiles')  # Optimize performance with prefetching
+        return Channel.objects.prefetch_related('profiles')  # Optimize performance with prefetching
 
     def perform_create(self, serializer):
         # Perform any additional logic when creating a Channel, if needed

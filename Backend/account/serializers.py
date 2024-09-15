@@ -26,6 +26,6 @@ class UserSerializer(ModelSerializer):
 class ProfileSerializer(ModelSerializer):
     class Meta:
         model = Profile
-        fields = ['id', 'user', 'first_name', 'last_name', 'profile_image', 'date_of_birth', 'active_status', 'last_active', 'timestamp']
-        read_only_fields = ['id', 'user', 'active_status', 'last_active', 'timestamp']  # Optional fields that should not be modified
+        fields = ['id', 'user', 'first_name', 'last_name', 'profile_image', 'date_of_birth', 'active_channel_name', 'last_active', 'timestamp']
+        read_only_fields = ['id', 'user', 'active_channel_name', 'last_active', 'timestamp']  # Optional fields that should not be modified
 

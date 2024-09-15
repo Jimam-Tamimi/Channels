@@ -53,9 +53,16 @@ class Profile(models.Model):
     last_name = models.CharField(max_length=50, null=True, blank=False)
     profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
-    active_status = models.BooleanField(default=False)  # Track if the user is currently active
+    active_channel_name = models.CharField(max_length=256, null=True, blank=False)  # Track if the user is currently active
     last_active = models.DateTimeField(default=timezone.now)  # Track when the user was last active
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def active_status(self):
+        """Returns a list of active profiles (where active_status is True)."""
+        return True if self.active_channel_name != None else False
+ 
+    
 
     def __str__(self):
         return f"{self.user.username}'s Profile"

@@ -14,8 +14,16 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { removeAuthData } from "@/secure-storage/authStorage";
 import { useAuthRedirect } from "@/hooks/auth";
 import { LogBox } from "react-native";
-import { createNotifications, RotateInRotateOut, RotateZIn, SlideInLeftSlideOutRight, ZoomInDownZoomOutDown, ZoomInDownZoomOutUp } from "react-native-notificated";
+import {
+  createNotifications,
+  RotateInRotateOut,
+  RotateZIn,
+  SlideInLeftSlideOutRight,
+  ZoomInDownZoomOutDown,
+  ZoomInDownZoomOutUp,
+} from "react-native-notificated";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { WebSocketProvider } from "@/context/WebSocketContext";
 
 // Ignore all log notifications
 LogBox.ignoreAllLogs();
@@ -50,34 +58,32 @@ export default function Layout() {
     return null;
   }
   const queryClient = new QueryClient();
-  const { NotificationsProvider, useNotifications, ...events } = createNotifications({
-    animationConfig: ZoomInDownZoomOutUp,
-    defaultStylesSettings: {
-      darkMode: true,
-      
-      globalConfig: {
-        bgColor: "#00000090",
-        borderType: "accent"
-      }
-    },
-  });
+  const { NotificationsProvider, useNotifications, ...events } =
+    createNotifications({
+      animationConfig: ZoomInDownZoomOutUp,
+      defaultStylesSettings: {
+        darkMode: true,
+
+        globalConfig: {
+          bgColor: "#00000090",
+          borderType: "accent",
+        },
+      },
+    });
 
   return (
-    <GestureHandlerRootView>
-      <NotificationsProvider
-
-      >
-        <QueryClientProvider client={queryClient}>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-            <Stack.Screen name="auth" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="conversations"
-              options={{ headerShown: false }}
-            />
-          </Stack>
-        </QueryClientProvider>
-      </NotificationsProvider>
-    </GestureHandlerRootView>
+    <WebSocketProvider>
+      <GestureHandlerRootView>
+        <NotificationsProvider>
+          <QueryClientProvider client={queryClient}>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+              <Stack.Screen name="auth" options={{ headerShown: false }} />
+              <Stack.Screen name="channels" options={{ headerShown: false }} />
+            </Stack>
+          </QueryClientProvider>
+        </NotificationsProvider>
+      </GestureHandlerRootView>
+    </WebSocketProvider>
   );
 }

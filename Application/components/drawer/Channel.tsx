@@ -7,7 +7,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { router } from "expo-router";
+import { Href, router } from "expo-router";
 import { ChannelType } from "@/api-calls/channel";
  
 const Channel: React.FC<ChannelType> = (props) => {
@@ -45,7 +45,7 @@ const Channel: React.FC<ChannelType> = (props) => {
           scale.value = withTiming(1, { duration: 200 });
           progress.value = withTiming(0, { duration: 200 });
         }}
-        onPress={() => router.push("/conversations/55")}
+        onPress={() => router.push(`/channels/${props.id.toString()}/` as  Href<`/channels/${string}/`>)}
       >
         <Avatar uri={props.image} size={53} isActive />
         <View className="justify-between flex-1 " style={{ gap: 5 }}>
