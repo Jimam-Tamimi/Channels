@@ -24,6 +24,9 @@ import {
 } from "react-native-notificated";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { WebSocketProvider } from "@/context/WebSocketContext";
+import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
+import { persistor, store } from "@/redux/store";
 
 // Ignore all log notifications
 LogBox.ignoreAllLogs();
@@ -72,18 +75,28 @@ export default function Layout() {
     });
 
   return (
-    <WebSocketProvider>
-      <GestureHandlerRootView>
-        <NotificationsProvider>
-          <QueryClientProvider client={queryClient}>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-              <Stack.Screen name="auth" options={{ headerShown: false }} />
-              <Stack.Screen name="channels" options={{ headerShown: false }} />
-            </Stack>
-          </QueryClientProvider>
-        </NotificationsProvider>
-      </GestureHandlerRootView>
-    </WebSocketProvider>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <WebSocketProvider>
+          <GestureHandlerRootView>
+            <NotificationsProvider>
+              <QueryClientProvider client={queryClient}>
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen
+                    name="(drawer)"
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen name="auth" options={{ headerShown: false }} />
+                  <Stack.Screen
+                    name="channels"
+                    options={{ headerShown: false }}
+                  />
+                </Stack>
+              </QueryClientProvider>
+            </NotificationsProvider>
+          </GestureHandlerRootView>
+        </WebSocketProvider>
+      </PersistGate>
+    </Provider>
   );
 }
