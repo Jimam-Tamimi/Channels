@@ -26,40 +26,55 @@ import { useMessagesByConversation } from "@/hooks/channels";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import moment from "moment";
+import uuid from "react-native-uuid";
 
-
-const formatTimestamp = (timestamp:string) => {
+const formatTimestamp = (timestamp: string) => {
   const now = moment();
   const messageTime = moment(timestamp);
 
   // Check if the timestamp is within the last 24 hours
-  if (now.diff(messageTime, 'hours') < 24) {
+  if (now.diff(messageTime, "hours") < 24) {
     // Show only the time (e.g., 22:45)
-    return messageTime.format('HH:mm');
-  } 
+    return messageTime.format("HH:mm");
+  }
   // Check if the timestamp is within the last 7 days
-  else if (now.diff(messageTime, 'days') < 7) {
+  else if (now.diff(messageTime, "days") < 7) {
     // Show the day of the week and time (e.g., Sunday 22:45)
-    return messageTime.format('dddd HH:mm');
-  } 
+    return messageTime.format("dddd HH:mm");
+  }
   // Otherwise, show full date and time (e.g., 4 Sep 2024, 19:25)
   else {
-    return messageTime.format('D MMM YYYY, HH:mm');
+    return messageTime.format("D MMM YYYY, HH:mm");
   }
 };
 
-function isDifferenceMoreThan15Minutes(timestamp1:string, timestamp2:string) {
+function isDifferenceMoreThan15Minutes(timestamp1: string, timestamp2: string) {
   const date1 = moment(timestamp1);
   const date2 = moment(timestamp2);
 
   // Calculate the difference in minutes between the two timestamps
-  const differenceInMinutes = Math.abs(date1.diff(date2, 'minutes'));
+  const differenceInMinutes = Math.abs(date1.diff(date2, "minutes"));
 
   // Return true if the difference is more than 15 minutes, false otherwise
   return differenceInMinutes > 15;
 }
 
- 
+function replaceObjectById(array: MessageType[], newObject: MessageType) {
+  const index = array.findIndex((item) => 
+    (item.uuid && newObject.uuid && item.uuid === newObject.uuid) || 
+    (item.id === newObject.id)
+  );
+
+  if (index !== -1) {
+    // Replace the object at the found index
+    array.splice(index, 1, newObject);
+  } else {
+    // If the object with the same ID is not found, you can optionally push the new object
+    array.push(newObject);
+  }
+  return array;
+}
+
 export default function Conversation() {
   const [messages, setMessages] = useState<MessageType[]>([]);
   // for send message
@@ -72,9 +87,6 @@ export default function Conversation() {
     formState: { errors },
   } = useForm();
 
-
-
-
   // Scroll to bottom when keyboard is shown
   useEffect(() => {
     // scroll to bottom after messages are loaded
@@ -84,7 +96,6 @@ export default function Conversation() {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }
     );
-    scrollViewRef.current?.scrollToEnd({ animated: false });
 
     return () => {
       keyboardDidShowListener.remove(); // Cleanup the event listener
@@ -92,64 +103,85 @@ export default function Conversation() {
   }, []);
 
   const handleChatMessage = (data: any) => {
+    console.log({ data });
+    console.log({ websocketDataFromBackenduuid: data?.message?.uuid });
+    console.log( messages[messages?.length-1]?.uuid);
+    setMessages((prevState) => [
+      ...replaceObjectById(prevState, data?.message),
+    ]);
   };
 
   // Handle WebSocket messages regardless of screen focus
-  useWebSocketHandler("CHAT", handleChatMessage, true);
+  useWebSocketHandler("send_message", handleChatMessage, true);
 
   const { socket } = useWebSocket();
-  const local = useLocalSearchParams(); 
-  console.log(local)
-  const { data: fetchedMessagesByConversation,  isLoading, isError, error } = useMessagesByConversation(local?.id as any );
+  const local = useLocalSearchParams();
+  console.log(local);
+  const {
+    data: fetchedMessagesByConversation,
+    isLoading,
+    isError,
+    error,
+  } = useMessagesByConversation(local?.id as any);
   const myUserId = useSelector((state: RootState) => state.auth.auth?.user?.id);
 
   useEffect(() => {
-    // console.log(fetchedMessagesByConversation[0]?.sender)
-    // console.log({myUserId})
-    if(fetchedMessagesByConversation){
-      console.log(fetchedMessagesByConversation[0]?.timestamp)
-      setMessages([...fetchedMessagesByConversation])
+    if (fetchedMessagesByConversation) {
+      console.log(fetchedMessagesByConversation[0]?.timestamp);
+      setMessages([...fetchedMessagesByConversation]);
     }
-  
-    return () => {
-      
-    }
-  }, [fetchedMessagesByConversation])
-  
+
+    return () => {};
+  }, [fetchedMessagesByConversation]);
+  useEffect(() => {
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 1);
+
+    return () => {};
+  }, [messages]);
+
 
   const onSend = (data: any) => {
-    if (!data?.text) {
-      return;
-    }
-    if (socket) {
-        socket.send(
-          JSON.stringify({
-            text: data?.text,
-            channel_id: local?.id,
-          })
-        );
-      setMessages((prevState) => [
-        ...prevState,
-        {
-          text: data?.text,
-          sender: myUserId,
-          conversation: local?.id,
-          timestamp: new Date(),
-          seen_by: [],
-          delivered_to: [],
-          status: "PENDING",
-        } as any
-      ]);
-      reset();
+    try {
+      if (!data?.text) {
+        return;
+      }
+      const messageUuid = uuid.v4();
+      data["uuid"] = messageUuid;
+      data["conversation_id"] = local?.id;
 
-      setTimeout(
-        () => scrollViewRef.current?.scrollToEnd({ animated: true }),
-        100
-      );
-    } else {
-      console.error("Socket not initialized or message/channelId is empty");
+      if (socket) {
+        setMessages((prevState) => [
+          ...prevState,
+          {
+            uuid: messageUuid,
+            text: data?.text,
+            sender: myUserId,
+            conversation: data?.conversation_id,
+            timestamp: new Date(),
+            seen_by: [],
+            delivered_to: [],
+            status: "PENDING",
+          } as any,
+        ]);
+
+        reset();
+
+        setTimeout(
+          () => scrollViewRef.current?.scrollToEnd({ animated: true }),
+          1
+        );
+
+        socket.send(JSON.stringify(data));
+      } else {
+        console.error("Socket not initialized or message/channelId is empty");
+      }
+    } catch (error) {
+      console.error("Error in onSend:", error);
     }
   };
+
   return (
     <>
       <View
@@ -192,11 +224,13 @@ export default function Conversation() {
             <View
               style={{
                 marginBottom:
-                  messages[i]?.sender !== myUserId && messages[i + 1]?.sender === myUserId
+                  messages[i]?.sender !== myUserId &&
+                  messages[i + 1]?.sender === myUserId
                     ? 10
                     : 0,
                 marginTop:
-                  messages[i]?.sender !== myUserId && messages[i - 1]?.sender === myUserId
+                  messages[i]?.sender !== myUserId &&
+                  messages[i - 1]?.sender === myUserId
                     ? 10
                     : 0,
               }}
@@ -214,7 +248,8 @@ export default function Conversation() {
                 <View
                   className={`
                 ${
-                  messages[i]?.sender !== myUserId && messages[i + 1]?.sender === myUserId
+                  messages[i]?.sender !== myUserId &&
+                  messages[i + 1]?.sender === myUserId
                     ? "visible"
                     : "invisible"
                 }
@@ -305,7 +340,7 @@ export default function Conversation() {
                       }`}
                       size={14}
                       color={`${
-                        // message?.status === "failed" 
+                        // message?.status === "failed"
                         false
                           ? "red"
                           : message?.sender === myUserId
@@ -316,8 +351,12 @@ export default function Conversation() {
                   </View>
                 )}
               </View>
-              
-              { ( i+1 != messages?.length && isDifferenceMoreThan15Minutes(message?.timestamp, messages[i+1]?.timestamp)) ? (
+
+              {i + 1 != messages?.length &&
+              isDifferenceMoreThan15Minutes(
+                message?.timestamp,
+                messages[i + 1]?.timestamp
+              ) ? (
                 <Text
                   style={{
                     fontSize: 12,
@@ -327,10 +366,11 @@ export default function Conversation() {
                   }}
                   className="text-center text-white "
                 >
-                    {formatTimestamp(messages[i+1].timestamp)}
-
-                </Text> 
-              ):''}
+                  {formatTimestamp(messages[i + 1].timestamp)}
+                </Text>
+              ) : (
+                ""
+              )}
             </View>
           ))}
         </ScrollView>

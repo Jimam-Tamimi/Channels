@@ -15,6 +15,8 @@ export interface MessageType {
   id?: number;
   text: string;
   sender: number;
+  uuid?: string;  
+
   conversation: number;
   timestamp: string;
   seen_by: number[];

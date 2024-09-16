@@ -32,9 +32,11 @@ class ProfileConsumer(AsyncJsonWebsocketConsumer):
             pass
 
     async def receive_json(self, content):
-        message_text = content.get('text')
-        conversation_id = content.get('conversation_id')
+        message_id = content.get('id', None)
+        message_text = content.get('text', None)
+        conversation_id = content.get('conversation_id', None)
         print(content)
+        print(not message_text or not conversation_id)
         if not message_text or not conversation_id:
             await self.send_json({'error': 'Invalid message format'})
             return
@@ -42,23 +44,24 @@ class ProfileConsumer(AsyncJsonWebsocketConsumer):
  
         conversation = await database_sync_to_async(Conversation.objects.get)(id=conversation_id)
         message =  await database_sync_to_async(Message.objects.create)(
+            id=message_id,
             text=message_text,
             sender=self.profile,
             conversation=conversation,
-            status='PENDING'
-        )
- 
+        ) 
 
         # Send message to each connected profile
         conversation_profiles = await self.get_channel_profiles(conversation_id)
+        message_data = await self.serialize_message(message)
+        message_data['uuid'] = content.get('uuid', None)
         for profile in conversation_profiles:
             if profile.active_channel_name:
                 print(profile.active_channel_name)
                 await self.channel_layer.send(
                     profile.active_channel_name,
                     {
-                        'type': 'chat.message',
-                        'message': MessageSerializer(message).data
+                        'type': 'send_message',
+                        'message': message_data
                     }
                 ) 
  
@@ -67,9 +70,12 @@ class ProfileConsumer(AsyncJsonWebsocketConsumer):
     def get_channel_profiles(self, conversation_id):
         conversation = Conversation.objects.get(id=conversation_id)
         return list(conversation.profiles.all())
+    @database_sync_to_async
+    def serialize_message(self, message):
+        return MessageSerializer(message).data
 
  
-    async def chat_message(self, event):
+    async def send_message(self, event):
         # Send the message to WebSocket
         print(event)
-        await self.send_json(event['message'])
+        await self.send_json(event)

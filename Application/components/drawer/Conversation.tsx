@@ -43,7 +43,7 @@ const Conversation: React.FC<ConversationType> = (props: ConversationType) => {
     isError,
     error,
   } = useMessage(props?.last_message || null);
-
+console.log(props?.last_message)
   const formatTimestamp = (timestamp: string) => {
     const duration = moment.duration(moment().diff(moment(timestamp)));
     if (duration.asYears() >= 1) return `${Math.floor(duration.asYears())}y`;

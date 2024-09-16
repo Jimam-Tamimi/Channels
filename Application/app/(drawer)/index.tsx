@@ -38,7 +38,7 @@ import Animated, {
 } from "react-native-reanimated";
 import Avatar from "@/components/utils/Avater";
 import Conversation from "@/components/drawer/Conversation";
-import AppleStyleSwipeableRow from "@/components/conversations/SwipeAbleRow";
+import AppleStyleSwipeableRow from "@/components/drawer/SwipeAbleRow";
 import { useAuthRedirect } from "@/hooks/auth";
 import useWebSocketHandler from "@/hooks/webSocketHandler";
 import { useConversation, useConversations } from "@/hooks/channels";
@@ -88,7 +88,6 @@ export default function Home() {
 
 
   const { data: conversations, isLoading, isError, error } = useConversations();
-
 
   return (
     <>
