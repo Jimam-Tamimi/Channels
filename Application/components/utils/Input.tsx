@@ -23,7 +23,7 @@ interface PropTypes extends React.ComponentProps<typeof TextInput> {
 
 const Input: React.FC<PropTypes> = (props) => {
   return (
-    <View>
+    <>
       <View
         style={[
           {
@@ -31,7 +31,6 @@ const Input: React.FC<PropTypes> = (props) => {
             justifyContent: "space-between",
             backgroundColor: "#3236458f",
             paddingRight: 20,
-
             borderRadius: 6,
             alignItems: "center",
             maxWidth: "100%",
@@ -49,6 +48,7 @@ const Input: React.FC<PropTypes> = (props) => {
             paddingHorizontal: 20,
             paddingVertical: 8,
             paddingRight: 5,
+            ...props.style as any
           }}
         />
         {props.rightElement}
@@ -60,7 +60,7 @@ const Input: React.FC<PropTypes> = (props) => {
       {!props?.noError && (
         <Text style={{ color: "#fc0303", top: 1, fontSize: 12, fontWeight: "700", letterSpacing:1 }}>{toCamelCase(props?.error?.message ? props?.error?.message  : '' )}</Text>
       )}
-    </View>
+    </>
   );
 };
 export default Input;

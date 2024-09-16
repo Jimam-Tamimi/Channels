@@ -21,7 +21,6 @@ const useWebSocketHandler = (
 
     const handleWebSocketMessage = (event: MessageEvent) => {
       const data: WebSocketData = JSON.parse(event.data);
-console.log(data)
       // Only handle messages of the correct type
       if (data.type === messageType) {
         if (runOnFocusOnly && !isFocused) return;

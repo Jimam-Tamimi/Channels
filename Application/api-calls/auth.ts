@@ -29,6 +29,6 @@ export const signUp = async (data: {
 };
 
 export const fetchProfileById = async (id: string) => {
-  const response = await api.get(`/profiles/${id}/`);
+  const response = await api.get(`/account/profiles/${id}/`);
   return response.data;
 };

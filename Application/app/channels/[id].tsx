@@ -21,199 +21,47 @@ import Animated from "react-native-reanimated";
 import { Image } from "expo-image";
 import useWebSocketHandler from "@/hooks/webSocketHandler";
 import { useWebSocket } from "@/context/WebSocketContext";
+import { MessageType } from "@/api-calls/channels";
+import { useMessagesByConversation } from "@/hooks/channels";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import moment from "moment";
 
-export interface MessageType {
-  id: string | number;
-  text: string;
-  timestamp: Date | number | string;
-  user: any;
-  // image?: string
-  // video?: string
-  // audio?: string
-  // system?: boolean
-  status: "pending" | "sent" | "delivered" | "seen" | "failed";
+
+const formatTimestamp = (timestamp:string) => {
+  const now = moment();
+  const messageTime = moment(timestamp);
+
+  // Check if the timestamp is within the last 24 hours
+  if (now.diff(messageTime, 'hours') < 24) {
+    // Show only the time (e.g., 22:45)
+    return messageTime.format('HH:mm');
+  } 
+  // Check if the timestamp is within the last 7 days
+  else if (now.diff(messageTime, 'days') < 7) {
+    // Show the day of the week and time (e.g., Sunday 22:45)
+    return messageTime.format('dddd HH:mm');
+  } 
+  // Otherwise, show full date and time (e.g., 4 Sep 2024, 19:25)
+  else {
+    return messageTime.format('D MMM YYYY, HH:mm');
+  }
+};
+
+function isDifferenceMoreThan15Minutes(timestamp1:string, timestamp2:string) {
+  const date1 = moment(timestamp1);
+  const date2 = moment(timestamp2);
+
+  // Calculate the difference in minutes between the two timestamps
+  const differenceInMinutes = Math.abs(date1.diff(date2, 'minutes'));
+
+  // Return true if the difference is more than 15 minutes, false otherwise
+  return differenceInMinutes > 15;
 }
 
+ 
 export default function Conversation() {
-  const local = useLocalSearchParams();
-  const [messages, setMessages] = useState<MessageType[]>([
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "other",
-      status: "pending",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "other",
-      status: "pending",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "me",
-      status: "seen",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "me",
-      status: "seen",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "me",
-      status: "seen",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "me",
-      status: "delivered",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "other",
-      status: "pending",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "other",
-      status: "pending",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "me",
-      status: "seen",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "me",
-      status: "seen",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "me",
-      status: "seen",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "me",
-      status: "delivered",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "other",
-      status: "pending",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "other",
-      status: "pending",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "me",
-      status: "seen",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "me",
-      status: "seen",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "me",
-      status: "seen",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "me",
-      status: "delivered",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "other",
-      status: "pending",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "other",
-      status: "pending",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "other",
-      status: "pending",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "other",
-      status: "pending",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "me",
-      status: "seen",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "me",
-      status: "seen",
-    },
-    {
-      id: 45,
-      text: `Hi. How are you doing today. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Assumenda deleniti nam magni repellat facere autem minus, quo sit asperiores delectus!`,
-      timestamp: "Fri",
-      user: "me",
-      status: "seen",
-    },
-  ]);
-
+  const [messages, setMessages] = useState<MessageType[]>([]);
   // for send message
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -224,8 +72,12 @@ export default function Conversation() {
     formState: { errors },
   } = useForm();
 
+
+
+
   // Scroll to bottom when keyboard is shown
   useEffect(() => {
+    // scroll to bottom after messages are loaded
     const keyboardDidShowListener = Keyboard.addListener(
       "keyboardDidShow",
       () => {
@@ -240,35 +92,53 @@ export default function Conversation() {
   }, []);
 
   const handleChatMessage = (data: any) => {
-    console.log("from channel page", data);
   };
 
   // Handle WebSocket messages regardless of screen focus
   useWebSocketHandler("CHAT", handleChatMessage, true);
 
   const { socket } = useWebSocket();
+  const local = useLocalSearchParams(); 
+  console.log(local)
+  const { data: fetchedMessagesByConversation,  isLoading, isError, error } = useMessagesByConversation(local?.id as any );
+  const myUserId = useSelector((state: RootState) => state.auth.auth?.user?.id);
+
+  useEffect(() => {
+    // console.log(fetchedMessagesByConversation[0]?.sender)
+    // console.log({myUserId})
+    if(fetchedMessagesByConversation){
+      console.log(fetchedMessagesByConversation[0]?.timestamp)
+      setMessages([...fetchedMessagesByConversation])
+    }
+  
+    return () => {
+      
+    }
+  }, [fetchedMessagesByConversation])
+  
+
   const onSend = (data: any) => {
     if (!data?.text) {
       return;
     }
     if (socket) {
-      setTimeout(() => {
         socket.send(
           JSON.stringify({
-            text: "Message from chat",
-            channel_id: 1,
+            text: data?.text,
+            channel_id: local?.id,
           })
         );
-      }, 3000);
       setMessages((prevState) => [
         ...prevState,
         {
-          id: prevState.length + 1,
           text: data?.text,
-          timestamp: "Fri",
-          user: "me",
-          status: "pending",
-        },
+          sender: myUserId,
+          conversation: local?.id,
+          timestamp: new Date(),
+          seen_by: [],
+          delivered_to: [],
+          status: "PENDING",
+        } as any
       ]);
       reset();
 
@@ -322,11 +192,11 @@ export default function Conversation() {
             <View
               style={{
                 marginBottom:
-                  messages[i]?.user !== "me" && messages[i + 1]?.user === "me"
+                  messages[i]?.sender !== myUserId && messages[i + 1]?.sender === myUserId
                     ? 10
                     : 0,
                 marginTop:
-                  messages[i]?.user !== "me" && messages[i - 1]?.user === "me"
+                  messages[i]?.sender !== myUserId && messages[i - 1]?.sender === myUserId
                     ? 10
                     : 0,
               }}
@@ -335,7 +205,7 @@ export default function Conversation() {
               <View
                 className={`flex-row items-end  
                 ${
-                  message?.user === "me"
+                  message?.sender === myUserId
                     ? "justify-end gap-0.5"
                     : "justify-start gap-2.5 "
                 }
@@ -344,7 +214,7 @@ export default function Conversation() {
                 <View
                   className={`
                 ${
-                  messages[i]?.user !== "me" && messages[i + 1]?.user === "me"
+                  messages[i]?.sender !== myUserId && messages[i + 1]?.sender === myUserId
                     ? "visible"
                     : "invisible"
                 }
@@ -359,32 +229,32 @@ export default function Conversation() {
                 <View
                   style={{
                     backgroundColor:
-                      message?.user === "me" ? "#5660e762" : "#ff004c70",
+                      message?.sender === myUserId ? "#5660e762" : "#ff004c70",
 
                     borderBottomLeftRadius:
-                      (messages[i]?.user !== "me" &&
-                        messages[i + 1]?.user === "me") ||
-                      messages[i]?.user === "me"
+                      (messages[i]?.sender !== myUserId &&
+                        messages[i + 1]?.sender === myUserId) ||
+                      messages[i]?.sender === myUserId
                         ? 10
                         : 0,
                     borderTopLeftRadius:
-                      (messages[i]?.user !== "me" &&
-                        (messages[i - 1]?.user === "me" || i == 0)) ||
-                      messages[i]?.user === "me"
+                      (messages[i]?.sender !== myUserId &&
+                        (messages[i - 1]?.sender === myUserId || i == 0)) ||
+                      messages[i]?.sender === myUserId
                         ? 10
                         : 0,
                     borderBottomRightRadius:
-                      messages[i]?.user === "me" &&
-                      messages[i + 1]?.user !== "me"
+                      messages[i]?.sender === myUserId &&
+                      messages[i + 1]?.sender !== myUserId
                         ? 10
-                        : messages[i]?.user !== "me"
+                        : messages[i]?.sender !== myUserId
                         ? 10
                         : 0,
                     borderTopRightRadius:
-                      messages[i]?.user === "me" &&
-                      messages[i - 1]?.user !== "me"
+                      messages[i]?.sender === myUserId &&
+                      messages[i - 1]?.sender !== myUserId
                         ? 10
-                        : messages[i]?.user !== "me"
+                        : messages[i]?.sender !== myUserId
                         ? 10
                         : 0,
                     maxWidth: "80%",
@@ -406,13 +276,13 @@ export default function Conversation() {
                     }}
                     className="text-white "
                   >
-                    4 Sep 2024, 19:25
+                    {formatTimestamp(message?.timestamp)}
                   </Text>
                 </View>
-                {message?.status === "seen" ? (
+                {message?.status === "SEEN" ? (
                   <View
                     className={`${
-                      messages[i + 1]?.status === "seen" && "invisible"
+                      messages[i + 1]?.status === "SEEN" && "invisible"
                     }`}
                   >
                     <Avatar
@@ -425,19 +295,20 @@ export default function Conversation() {
                   <View style={{ width: 14, height: 14 }}>
                     <Ionicons
                       name={`${
-                        message?.status === "sent"
+                        message?.status === "SENT"
                           ? "checkmark-done-circle-outline"
-                          : message?.status === "delivered"
+                          : message?.status === "DELIVERED"
                           ? "checkmark-done-circle"
-                          : message?.status === "pending"
+                          : message?.status === "PENDING"
                           ? "ellipsis-horizontal-circle-outline"
                           : "alert-circle-outline"
                       }`}
                       size={14}
                       color={`${
-                        message?.status === "failed"
+                        // message?.status === "failed" 
+                        false
                           ? "red"
-                          : message?.user === "me"
+                          : message?.sender === myUserId
                           ? "white"
                           : "transparent"
                       }`}
@@ -445,7 +316,8 @@ export default function Conversation() {
                   </View>
                 )}
               </View>
-              {false && (
+              
+              { ( i+1 != messages?.length && isDifferenceMoreThan15Minutes(message?.timestamp, messages[i+1]?.timestamp)) ? (
                 <Text
                   style={{
                     fontSize: 12,
@@ -455,9 +327,10 @@ export default function Conversation() {
                   }}
                   className="text-center text-white "
                 >
-                  4 Sep 2024, 19:25
-                </Text>
-              )}
+                    {formatTimestamp(messages[i+1].timestamp)}
+
+                </Text> 
+              ):''}
             </View>
           ))}
         </ScrollView>

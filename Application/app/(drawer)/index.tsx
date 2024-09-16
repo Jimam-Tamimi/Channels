@@ -78,7 +78,6 @@ export default function Home() {
   const [messages, setMessages] = useState<string[]>([]);
 
   const handleChatMessage = (data:any) => {
-    console.log("from index page",data)
   };
 
   // Handle WebSocket messages regardless of screen focus
@@ -135,8 +134,8 @@ export default function Home() {
               placeholder="Search"
               inputMode="search"
               className="text-base"
+              noError
               containerStyle={{
-                paddingVertical: 6,
                 paddingHorizontal: 13,
                 flex: 1,
                 borderRadius: 100,
@@ -145,7 +144,7 @@ export default function Home() {
                 fontSize: 15,
                 fontWeight: "500",
                 letterSpacing: 1.5,
-                marginLeft: 8,
+                paddingLeft: 5,
               }}
               leftElement={
                 <MaterialIcons name="person-search" size={20} color={"white"} />

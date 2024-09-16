@@ -9,10 +9,11 @@ interface AuthState {
   loading: boolean;
   error: string | null;
 }
+let authStorageData = SecureStore.getItem("auth")
 
-let authData = JSON.parse(SecureStore.getItem("auth") as any) as (AuthType | null)
+let authData = (authStorageData? JSON.parse(authStorageData)  : null) as (AuthType | null)
 
-console.log({authData})
+
 const initialState: AuthState = {
   auth: authData? authData : null,
   loading: false,

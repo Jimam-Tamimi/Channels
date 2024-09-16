@@ -7,7 +7,7 @@ from .models import Profile  # Import Profile model
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = ['id', 'text', 'sender', 'conversation',  'timestamp', "seen_by", "delivered_to" ]
+        fields = ['id', 'text', 'sender', 'conversation',  'timestamp', "seen_by", "delivered_to", "status" ]
         extra_kwargs = {
             'timestamp': {'read_only': True}, 
         }
@@ -23,21 +23,23 @@ class ConversationSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'profiles', 'timestamp', 'is_group', 'image', 'active_profiles', "last_message"]
         read_only_fields = [ 'timestamp', ]
 
-        
+            
     def get_name(self, obj):
-        """Returns the conversation name based on whether it is a group or one-on-one."""
-        if obj.is_group:
-            return obj.name or "Group Conversation"
-        else:
-            # Exclude the current user's profile to get the other profile's name
-            request = self.context.get('request')
-            if request and hasattr(request, 'user'):
-                current_user = request.user
-                other_profiles = obj.profiles.exclude(user=current_user)  # Adjusted line
-                if other_profiles.exists():
-                    other_profile = other_profiles.first()
-                    print(other_profile)
-                    return f"{other_profile.first_name} {other_profile.last_name}"
-            return "Unknown"
+        """Returns the conversation name or randomly fetches up to three first names for group conversations."""
+        if obj.name:
+            return obj.name
 
- 
+        if obj.is_group:
+            # Fetch up to 3 random profiles from the database without loading all profiles
+            random_profiles = obj.profiles.order_by('?').values_list('first_name', flat=True)[:3]
+            return ', '.join(random_profiles) or "Group Conversation"
+
+        # For one-on-one chats, exclude the current user's profile
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            other_profile_name = obj.profiles.exclude(user=request.user).values_list('first_name', flat=True).first()
+            if other_profile_name:
+                return other_profile_name
+
+        return "Unknown"
+        

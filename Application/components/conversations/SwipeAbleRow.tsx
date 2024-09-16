@@ -125,10 +125,8 @@ const AppleStyleSwipeableRow: React.FC<PropsWithChildren<unknown>> = ({ children
         borderRadius: 2,
       }}
       onSwipeableOpen={(direction) => {
-        console.log(`Opening swipeable from the ${direction}`);
       }}
       onSwipeableClose={(direction) => {
-        console.log(`Closing swipeable to the ${direction}`);
       }}
     >
       {children}

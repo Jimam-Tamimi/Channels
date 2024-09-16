@@ -22,7 +22,6 @@ api.interceptors.request.use(
   async (config) => {
     const state = store.getState(); // Access current Redux state
     const auth = state.auth.auth; // Get the auth data from Redux
-    console.log({auth})
 
     if (auth?.access) {
       config.headers.Authorization = `JWT ${auth.access}`;
@@ -36,7 +35,6 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    console.log(error.response)
     const originalRequest = error.config;
 
     // Check if token is expired or request is unauthorized
