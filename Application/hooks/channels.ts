@@ -17,5 +17,7 @@ export const useMessage = (id: number|null) => {
 export const useMessagesByConversation = (conversationId: number) => {
   return useQuery(['messages-for-conversation', conversationId], () => fetchMessagesForConversation(conversationId), {
     enabled: !!conversationId, // Only run the query if a conversationId is provided
+    staleTime: Infinity, // Prevent refetching
+    // cacheTime: Infinity, // Cache forever
   });
 };

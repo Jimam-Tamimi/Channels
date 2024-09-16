@@ -1,5 +1,5 @@
 import { View, Text, Pressable } from "react-native";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Avatar from "../utils/Avater";
 import Animated, {
   interpolateColor,
@@ -89,6 +89,7 @@ console.log(props?.last_message)
           borderRadius: 2,
           paddingVertical: 9,
           paddingHorizontal: 10,
+          marginVertical:5
         },
       ]}
     >

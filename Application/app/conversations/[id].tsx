@@ -27,6 +27,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import moment from "moment";
 import uuid from "react-native-uuid";
+import { useQueryClient } from "react-query";
 
 const formatTimestamp = (timestamp: string) => {
   const now = moment();
@@ -76,7 +77,7 @@ function replaceObjectById(array: MessageType[], newObject: MessageType) {
   return array;
 }
 
-export default function Conversation() {
+function Chat() {
   const [messages, setMessages] = useState<MessageType[]>([]);
   // for send message
   const scrollViewRef = useRef<ScrollView>(null);
@@ -104,9 +105,16 @@ export default function Conversation() {
   }, []);
 
   const handleChatMessage = useCallback((data: any) => {
-    setMessages((prevState) => [
-      ...replaceObjectById(prevState, data?.message),
-    ]);
+    setMessages((prevState) => {
+      const newState = [...replaceObjectById(prevState, data?.message)];
+      queryClient.setQueryData(
+        ["messages-for-conversation", local?.id],
+        (oldMessages: any) => {
+          return [...newState];
+        }
+      );
+      return [...newState];
+    });
   }, []);
   useWebSocketHandler("send_message", handleChatMessage, false);
 
@@ -114,7 +122,7 @@ export default function Conversation() {
 
   const { socket } = useWebSocket();
   const local = useLocalSearchParams();
-  console.log(local);
+  console.log({local});
   const {
     data: fetchedMessagesByConversation,
     isLoading,
@@ -124,28 +132,28 @@ export default function Conversation() {
   const myProfileId = useSelector(
     (state: RootState) => state.auth.auth?.profile?.id
   );
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (fetchedMessagesByConversation) {
       console.log(fetchedMessagesByConversation[0]?.timestamp);
       setMessages([...fetchedMessagesByConversation]);
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: false });
+      }, 1);
+
     }
 
     return () => {};
   }, [fetchedMessagesByConversation]);
-  useEffect(() => {
-    setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 1);
-
-    return () => {};
-  }, [messages]);
-
+ 
   const onSend = (data: any) => {
     try {
       if (!data?.text) {
         return;
       }
+      reset();
+
       const messageUuid = uuid.v4();
       data["uuid"] = messageUuid;
       data["conversation_id"] = local?.id;
@@ -165,7 +173,6 @@ export default function Conversation() {
           } as any,
         ]);
 
-        reset();
 
         setTimeout(
           () => scrollViewRef.current?.scrollToEnd({ animated: true }),
@@ -411,3 +418,4 @@ export default function Conversation() {
     </>
   );
 }
+export default Chat;

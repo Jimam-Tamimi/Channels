@@ -1,5 +1,5 @@
 // /src/hooks/useAuth.ts
-import { AuthType, fetchProfileById, signIn, signUp } from "@/api-calls/auth";
+import { AuthType, fetchProfileById, signIn, signUp,  } from "@/api-calls/auth";
 import {
   getAuthData,
   removeAuthData,
@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "react-query";
 import * as SecureStore from "expo-secure-store";
 import { refreshAuth } from "@/api-calls/api";
-import { setError, setLoading, signInSuccess } from "@/redux/slices/authSlice";
+import { setError, setLoading, signInSuccess, signOut } from '@/redux/slices/authSlice';
 import { useAppDispatch } from "@/redux/store";
 
 export const useSignIn = () => {
@@ -36,13 +36,20 @@ export const useSignIn = () => {
 };
 
 export const useSignUp = () => {
+  const dispatch = useAppDispatch();
   return useMutation(signUp, {
-    onSuccess: async (data) => {
+    onMutate: () => {
+      dispatch(setLoading(true));
+    },
+    onSuccess: async (data: AuthType) => {
+      dispatch(signInSuccess(data)); // Dispatch sign-in success
       await storeAuthData(data); // Store JWT on success
     },
-    onError: (error:AxiosError) => {
-      // console.error("Sign-up error:", error.response);
-     
+    onError: (error: AxiosError) => {
+      dispatch(setError(error.message)); // Dispatch error
+    },
+    onSettled: () => {
+      dispatch(setLoading(false));
     },
   });
 };
@@ -58,12 +65,15 @@ const checkTokenValidity = (token: string): boolean => {
 };
 
 export const useSignOut = () => {
-  const signOut = async () => {
+  const dispatch = useAppDispatch();
+  
+  const signOutFn = async () => {
+    dispatch(signOut()); // Dispatch sign-in success
     await removeAuthData();
     router.replace("/auth/sign-in"); // Redirect to sign-in page after logout
   };
 
-  return signOut;
+  return signOutFn;
 };
 
 export const useAuthRedirect = () => {

@@ -18,22 +18,22 @@ export const WebSocketProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const myProfileId = useSelector(
-    (state: RootState) => state.auth.auth?.profile?.id
+  const auth = useSelector(
+    (state: RootState) => state.auth.auth
   );
 
   useEffect(() => {
-    if (myProfileId) {
-      const ws = new WebSocket(`ws://10.0.2.2:8000/ws/${myProfileId}/`); // Replace with your WebSocket URL
+    if (auth?.profile?.id) {
+      const ws = new WebSocket(`ws://10.0.2.2:8000/ws/${auth?.profile?.id}/`); // Replace with your WebSocket URL
       // const wsUrl = `ws://localhost:8000/ws/${profileId}/`;
 
       setSocket(ws);
       return () => {
         ws.close();
       };
-    }
+    }  
     return () => {};
-  }, [myProfileId]);
+  }, [auth]);
 
   return (
     <WebSocketContext.Provider value={{ socket }}>

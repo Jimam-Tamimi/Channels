@@ -65,13 +65,7 @@ export default function RootLayout() {
               <Text style={styles.headerTitle}>Conversations</Text>
               {/* Avatar */}
               <Pressable onPress={e => {
-                notify("success", {
-                  params: {
-                    title: "Success",
-                    description: "Successfully Signed Out",
-                  },
-                });
-                router.push("/auth/sign-in");
+                signOut()
               }}>
                 <Avatar
                   uri="https://randomuser.me/api/portraits/men/32.jpg"
