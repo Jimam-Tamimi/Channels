@@ -12,14 +12,25 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "react-query";
 import * as SecureStore from "expo-secure-store";
 import { refreshAuth } from "@/api-calls/api";
+import { setError, setLoading, signInSuccess } from "@/redux/slices/authSlice";
+import { useAppDispatch } from "@/redux/store";
 
 export const useSignIn = () => {
+  const dispatch = useAppDispatch();
+
   return useMutation(signIn, {
-    onSuccess: async (data:AuthType) => {
-      // console.log(data)
+    onMutate: () => {
+      dispatch(setLoading(true));
+    },
+    onSuccess: async (data: AuthType) => {
+      dispatch(signInSuccess(data)); // Dispatch sign-in success
       await storeAuthData(data); // Store JWT on success
     },
     onError: (error: AxiosError) => {
+      dispatch(setError(error.message)); // Dispatch error
+    },
+    onSettled: () => {
+      dispatch(setLoading(false));
     },
   });
 };

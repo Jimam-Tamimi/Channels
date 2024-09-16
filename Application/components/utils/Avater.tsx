@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 
 interface AvatarProps {
-  uri: string;
+  uri: any;
   size?: number;
   name?: string;
   isActive?: boolean;
@@ -10,12 +10,12 @@ interface AvatarProps {
 
 }
 
-const Avatar: React.FC<AvatarProps> = ({ uri, size = 64, name, isActive = false, borderLess=false }) => {
+const Avatar: React.FC<AvatarProps> = ({ uri, size = 64, name, isActive = false, borderLess=false }) => { 
   return (
     <View style={styles.container}>
       {/* Avatar Image */}
       <Image
-        source={{ uri }}
+        source={ typeof(uri) == "string" ? {uri:uri} : uri }
         style={[ { width: size, height: size, borderRadius: size / 2,  borderWidth:  borderLess ? 0 : 1, borderColor: 'gray', }]}
       />
       {/* Active Status Indicator */}

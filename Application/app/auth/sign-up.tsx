@@ -116,7 +116,6 @@ export default function SignUp() {
           Object.keys(errorData).forEach((key) => {
             if (errorData[key]) {
               errorData[key].forEach((message: string) => {
-                console.log(key, message);
                 setError(key as any, { message });
               });
             }

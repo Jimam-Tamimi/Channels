@@ -7,6 +7,8 @@ import axios, { AxiosError } from "axios";
 import { router, usePathname } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { AuthType } from "./auth";
+import { store } from "@/redux/store";
+import { signInSuccess, signOut } from "@/redux/slices/authSlice";
 
 const api = axios.create({
   baseURL: `${process.env.EXPO_PUBLIC_API_URL}/api`, // Set this in your environment variables
@@ -15,52 +17,79 @@ const api = axios.create({
     Accept: "application/json",
   },
 });
-
-api.interceptors.response.use(
+// Add request interceptor to attach token dynamically from Redux state
+api.interceptors.request.use(
   async (config) => {
-    const auth = await getAuthData();
-    setTimeout(() => {
-      
-      console.log({auth})
-    }, 3000);
+    const state = store.getState(); // Access current Redux state
+    const auth = state.auth.auth; // Get the auth data from Redux
+
     if (auth?.access) {
-      config.headers.Authorization = `JWT ${auth?.access}`;
+      config.headers.Authorization = `JWT ${auth.access}`;
     }
     return config;
   },
+  (error) => Promise.reject(error)
+);
+
+// Add response interceptor for handling refresh token
+api.interceptors.response.use(
+  (response) => response,
   async (error) => {
-    // console.log(error.response)
     const originalRequest = error.config;
+
+    // Check if token is expired or request is unauthorized
     if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      // Try refreshing the token
       const newAuth = await refreshAuth();
       if (newAuth?.access) {
-        originalRequest._retry = true;
-        originalRequest.headers["Authorization"] = `JWT ${newAuth?.access}`;
+        // Update Redux state with new tokens
+        store.dispatch(signInSuccess(newAuth));
+
+        // Retry the original request with the new access token
+        originalRequest.headers["Authorization"] = `JWT ${newAuth.access}`;
         return api(originalRequest);
       } else {
+        // Sign out the user and remove tokens if refresh fails
+        store.dispatch(signOut());
         await removeAuthData();
-        router.navigate("/auth/sign-in");
+        router.replace("/auth/sign-in");
       }
     }
     return Promise.reject(error);
   }
 );
 
-export const refreshAuth: () => Promise<AuthType> | null = async () => {
-  const auth = await getAuthData();
 
-  if (!auth?.refresh) return null;
+ 
+
+export const refreshAuth = async (): Promise<AuthType | null> => {
+  const state = store.getState(); // Access Redux state
+  const auth = state.auth.auth; // Get the auth data from Redux
+
+  if (!auth?.refresh) return null; // If no refresh token, return null
 
   try {
     const response = await axios.post(
       `${process.env.EXPO_PUBLIC_API_URL}api/account/token/refresh/`,
       { refresh: auth?.refresh }
     );
-    await storeAuthData(response.data);
-    return response.data;
+
+    const newAuth: AuthType = response.data;
+
+    // Store new tokens in Secure Storage
+    await storeAuthData(newAuth);
+
+    // Update Redux store with new tokens
+    store.dispatch(signInSuccess(newAuth));
+
+    return newAuth; // Return the new authentication data
   } catch (error) {
+    // If refresh fails, sign the user out and clear data
+    await removeAuthData();
+    store.dispatch(signOut()); // Dispatch signOut action in Redux
     return null;
   }
 };
-
 export default api;

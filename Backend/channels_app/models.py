@@ -48,9 +48,8 @@ class Message(models.Model):
     @property
     def status(self):
         # Exclude the sender profile from the check
-        other_profiles_delivered = self.delivered_to.exclude(id=self.profile.id)
-        other_profiles_seen = self.seen_by.exclude(id=self.profile.id)
-
+        other_profiles_delivered = self.delivered_to.exclude(id=self.sender.id)
+        other_profiles_seen = self.seen_by.exclude(id=self.sender.id)   
         if other_profiles_seen.exists():
             return 'SEEN'
         elif other_profiles_delivered.exists():
