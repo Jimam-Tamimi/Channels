@@ -81,15 +81,16 @@ export default function Layout() {
           <GestureHandlerRootView>
             <NotificationsProvider>
               <QueryClientProvider client={queryClient}>
-                <Stack screenOptions={{ headerShown: false }}>
+                <Stack  screenOptions={{ headerShown: false,  }}>
                   <Stack.Screen
                     name="(drawer)"
                     options={{ headerShown: false }}
                   />
                   <Stack.Screen name="auth" options={{ headerShown: false }} />
                   <Stack.Screen
-                    name="channels"
-                    options={{ headerShown: false }}
+                    name="conversations"
+                    options={{ headerShown: false,  }}
+                    
                   />
                 </Stack>
               </QueryClientProvider>

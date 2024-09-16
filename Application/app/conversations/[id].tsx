@@ -1,7 +1,7 @@
-import { Chat } from "@/components/conversations/Chat";
+// import { Chat } from "@/components/conversations/Chat";
 import { Link, useLocalSearchParams } from "expo-router";
 import { StyleSheet } from "nativewind";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   Keyboard,
@@ -60,9 +60,10 @@ function isDifferenceMoreThan15Minutes(timestamp1: string, timestamp2: string) {
 }
 
 function replaceObjectById(array: MessageType[], newObject: MessageType) {
-  const index = array.findIndex((item) => 
-    (item.uuid && newObject.uuid && item.uuid === newObject.uuid) || 
-    (item.id === newObject.id)
+  const index = array.findIndex(
+    (item) =>
+      (item.uuid && newObject.uuid && item.uuid === newObject.uuid) ||
+      item.id === newObject.id
   );
 
   if (index !== -1) {
@@ -102,17 +103,14 @@ export default function Conversation() {
     };
   }, []);
 
-  const handleChatMessage = (data: any) => {
-    console.log({ data });
-    console.log({ websocketDataFromBackenduuid: data?.message?.uuid });
-    console.log( messages[messages?.length-1]?.uuid);
+  const handleChatMessage = useCallback((data: any) => {
     setMessages((prevState) => [
       ...replaceObjectById(prevState, data?.message),
     ]);
-  };
+  }, []);
+  useWebSocketHandler("send_message", handleChatMessage, false);
 
   // Handle WebSocket messages regardless of screen focus
-  useWebSocketHandler("send_message", handleChatMessage, true);
 
   const { socket } = useWebSocket();
   const local = useLocalSearchParams();
@@ -123,7 +121,9 @@ export default function Conversation() {
     isError,
     error,
   } = useMessagesByConversation(local?.id as any);
-  const myUserId = useSelector((state: RootState) => state.auth.auth?.user?.id);
+  const myProfileId = useSelector(
+    (state: RootState) => state.auth.auth?.profile?.id
+  );
 
   useEffect(() => {
     if (fetchedMessagesByConversation) {
@@ -141,7 +141,6 @@ export default function Conversation() {
     return () => {};
   }, [messages]);
 
-
   const onSend = (data: any) => {
     try {
       if (!data?.text) {
@@ -157,7 +156,7 @@ export default function Conversation() {
           {
             uuid: messageUuid,
             text: data?.text,
-            sender: myUserId,
+            sender: myProfileId,
             conversation: data?.conversation_id,
             timestamp: new Date(),
             seen_by: [],
@@ -224,22 +223,22 @@ export default function Conversation() {
             <View
               style={{
                 marginBottom:
-                  messages[i]?.sender !== myUserId &&
-                  messages[i + 1]?.sender === myUserId
+                  messages[i]?.sender !== myProfileId &&
+                  messages[i + 1]?.sender === myProfileId
                     ? 10
                     : 0,
                 marginTop:
-                  messages[i]?.sender !== myUserId &&
-                  messages[i - 1]?.sender === myUserId
+                  messages[i]?.sender !== myProfileId &&
+                  messages[i - 1]?.sender === myProfileId
                     ? 10
                     : 0,
               }}
               key={i}
             >
               <View
-                className={`flex-row items-end  
+                className={`flex-row items-end
                 ${
-                  message?.sender === myUserId
+                  message?.sender === myProfileId
                     ? "justify-end gap-0.5"
                     : "justify-start gap-2.5 "
                 }
@@ -248,8 +247,8 @@ export default function Conversation() {
                 <View
                   className={`
                 ${
-                  messages[i]?.sender !== myUserId &&
-                  messages[i + 1]?.sender === myUserId
+                  messages[i]?.sender !== myProfileId &&
+                  messages[i + 1]?.sender === myProfileId
                     ? "visible"
                     : "invisible"
                 }
@@ -264,32 +263,34 @@ export default function Conversation() {
                 <View
                   style={{
                     backgroundColor:
-                      message?.sender === myUserId ? "#5660e762" : "#ff004c70",
+                      message?.sender === myProfileId
+                        ? "#5660e762"
+                        : "#ff004c70",
 
                     borderBottomLeftRadius:
-                      (messages[i]?.sender !== myUserId &&
-                        messages[i + 1]?.sender === myUserId) ||
-                      messages[i]?.sender === myUserId
+                      (messages[i]?.sender !== myProfileId &&
+                        messages[i + 1]?.sender === myProfileId) ||
+                      messages[i]?.sender === myProfileId
                         ? 10
                         : 0,
                     borderTopLeftRadius:
-                      (messages[i]?.sender !== myUserId &&
-                        (messages[i - 1]?.sender === myUserId || i == 0)) ||
-                      messages[i]?.sender === myUserId
+                      (messages[i]?.sender !== myProfileId &&
+                        (messages[i - 1]?.sender === myProfileId || i == 0)) ||
+                      messages[i]?.sender === myProfileId
                         ? 10
                         : 0,
                     borderBottomRightRadius:
-                      messages[i]?.sender === myUserId &&
-                      messages[i + 1]?.sender !== myUserId
+                      messages[i]?.sender === myProfileId &&
+                      messages[i + 1]?.sender !== myProfileId
                         ? 10
-                        : messages[i]?.sender !== myUserId
+                        : messages[i]?.sender !== myProfileId
                         ? 10
                         : 0,
                     borderTopRightRadius:
-                      messages[i]?.sender === myUserId &&
-                      messages[i - 1]?.sender !== myUserId
+                      messages[i]?.sender === myProfileId &&
+                      messages[i - 1]?.sender !== myProfileId
                         ? 10
-                        : messages[i]?.sender !== myUserId
+                        : messages[i]?.sender !== myProfileId
                         ? 10
                         : 0,
                     maxWidth: "80%",
@@ -297,7 +298,7 @@ export default function Conversation() {
                   className="px-3 py-2 "
                 >
                   <Text
-                    className={`   leading-6 tracking-wider text-white  
+                    className={`   leading-6 tracking-wider text-white
                     `}
                   >
                     {message?.text}
@@ -343,7 +344,7 @@ export default function Conversation() {
                         // message?.status === "failed"
                         false
                           ? "red"
-                          : message?.sender === myUserId
+                          : message?.sender === myProfileId
                           ? "white"
                           : "transparent"
                       }`}

@@ -38,13 +38,15 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         refresh = RefreshToken.for_user(user)
         
         # Serialize the user data
-        user_serializer = UserSerializer(user)
+        user_serializer = UserSerializer(user) 
+        profile_serializer = ProfileSerializer(user.profile)
         
         # Return the tokens and user data in the response
         return Response({
             'refresh': str(refresh),
             'access': str(refresh.access_token),
-            'user': user_serializer.data
+            'user': user_serializer.data,
+            "profile": profile_serializer.data,
         })
 
     

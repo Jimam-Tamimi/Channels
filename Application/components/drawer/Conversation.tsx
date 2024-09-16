@@ -1,5 +1,5 @@
 import { View, Text, Pressable } from "react-native";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Avatar from "../utils/Avater";
 import Animated, {
   interpolateColor,
@@ -16,6 +16,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import moment from "moment";
 import { Ionicons } from "@expo/vector-icons";
+import useWebSocketHandler from "@/hooks/webSocketHandler";
 
 const Conversation: React.FC<ConversationType> = (props: ConversationType) => {
   // code for animation part
@@ -34,15 +35,28 @@ const Conversation: React.FC<ConversationType> = (props: ConversationType) => {
     };
   });
 
+  const [lastMessage, setLastMessage] = useState<MessageType | null>(null)
+  
+
   // fetching profile data and last message data
 
-  const myUserId = useSelector((state: RootState) => state.auth.auth?.user?.id);
+  const myProfileId = useSelector((state: RootState) => state.auth.auth?.profile?.id);
   const {
-    data: lastMessage,
+    data: lastMessageFromHook,
     isLoading,
     isError,
     error,
   } = useMessage(props?.last_message || null);
+
+  useEffect(() => {
+    setLastMessage(lastMessageFromHook as any)
+  
+    return () => {
+      
+    }
+  }, [lastMessageFromHook])
+  
+
 console.log(props?.last_message)
   const formatTimestamp = (timestamp: string) => {
     const duration = moment.duration(moment().diff(moment(timestamp)));
@@ -54,6 +68,16 @@ console.log(props?.last_message)
       return `${Math.floor(duration.asMinutes())}m`;
     return `${Math.floor(duration.asSeconds())}s`; // fallback to seconds
   };
+
+
+  const handleChatMessage = useCallback((data: any) => { 
+    if(props?.id==data?.message?.conversation){
+      setLastMessage(data?.message);
+    }
+  }, []); 
+  useWebSocketHandler("send_message", handleChatMessage, false);
+
+  
 
   return (
     <Animated.View
@@ -81,7 +105,7 @@ console.log(props?.last_message)
         }}
         onPress={() =>
           router.push(
-            `/channels/${props.id.toString()}/` as Href<`/channels/${string}/`>
+            `/conversations/${props.id.toString()}/` as Href<`/conversations/${string}/`>
           )
         }
       >
@@ -146,7 +170,7 @@ console.log(props?.last_message)
               style={{ letterSpacing: 0.5, fontSize: 12, fontWeight: 300, color: lastMessage?.text?  "white": "#ffffff90" }}
               className="text-white "
             >
-              {lastMessage?.sender == myUserId ? "You: " : ""}
+              {lastMessage?.sender == myProfileId ? "You: " : ""}
               {lastMessage?.text?lastMessage?.text: "No Message Yet" }
             </Text>
             <Text

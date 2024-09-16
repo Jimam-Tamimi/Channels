@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import { useWebSocket } from '../context/WebSocketContext';
-import { useIsFocused } from '@react-navigation/native';
+import { useEffect } from "react";
+import { useWebSocket } from "../context/WebSocketContext";
+import { useIsFocused } from "@react-navigation/native";
 
 interface WebSocketData {
   type: string;
@@ -22,19 +22,20 @@ const useWebSocketHandler = (
     const handleWebSocketMessage = (event: MessageEvent) => {
       const data: WebSocketData = JSON.parse(event.data);
       // Only handle messages of the correct type
- 
+
       if (data.type === messageType) {
         if (runOnFocusOnly && !isFocused) return;
         handleMessage(data);
       }
     };
 
-    socket.addEventListener('message', handleWebSocketMessage);
+    socket.addEventListener("message", handleWebSocketMessage);
 
     return () => {
-      socket.removeEventListener('message', handleWebSocketMessage);
+      socket.removeEventListener("message", handleWebSocketMessage);
     };
   }, [socket, messageType, handleMessage, runOnFocusOnly, isFocused]);
+  // }, []);
 };
 
 export default useWebSocketHandler;

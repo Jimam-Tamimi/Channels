@@ -77,14 +77,10 @@ export default function Home() {
 
   const [messages, setMessages] = useState<string[]>([]);
 
-  const handleChatMessage = (data:any) => {
-  };
-
-  // Handle WebSocket messages regardless of screen focus
-  useWebSocketHandler('CHAT', handleChatMessage, false);
-
+ 
   
   
+
 
 
   const { data: conversations, isLoading, isError, error } = useConversations();
