@@ -17,6 +17,7 @@ import { RootState } from "@/redux/store";
 import moment from "moment";
 import { Ionicons } from "@expo/vector-icons";
 import useWebSocketHandler from "@/hooks/webSocketHandler";
+import useFormattedTimeAgo from "@/hooks/useFormattedTimeAgo";
 
 const Conversation: React.FC<ConversationType> = (props: ConversationType) => {
   // code for animation part
@@ -57,7 +58,6 @@ const Conversation: React.FC<ConversationType> = (props: ConversationType) => {
   }, [lastMessageFromHook])
   
 
-console.log(props?.last_message)
   const formatTimestamp = (timestamp: string) => {
     const duration = moment.duration(moment().diff(moment(timestamp)));
     if (duration.asYears() >= 1) return `${Math.floor(duration.asYears())}y`;
@@ -75,8 +75,15 @@ console.log(props?.last_message)
       setLastMessage(data?.message);
     }
   }, []); 
-  useWebSocketHandler("send_message", handleChatMessage, false);
+  
+  useWebSocketHandler("deliver_message", handleChatMessage, false);
+ 
+  useWebSocketHandler("message_delivered", handleChatMessage, false);
+ 
+  useWebSocketHandler("message_seen", handleChatMessage, true);
 
+
+  const formattedTimeAgo = useFormattedTimeAgo(lastMessage?.timestamp as any); // Use the custom hook
   
 
   return (
@@ -178,9 +185,8 @@ console.log(props?.last_message)
               style={{ fontSize: 12 }}
               className="font-semibold tracking-wider text-white"
             >
-              {lastMessage?.timestamp
-                ? formatTimestamp(lastMessage.timestamp)
-                : ""}
+              {/* {lastMessage?.timestamp ? moment(lastMessage?.timestamp).fromNow() : ''} */}
+              {lastMessage?.timestamp ? formattedTimeAgo: ""}
             </Text>
           </View>
         </View>

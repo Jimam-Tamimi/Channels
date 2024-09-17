@@ -13,8 +13,6 @@ const MessageList = ({ messages }: MessageListProps) => {
   const scrollViewRef = useRef<ScrollView>(null);
   const auth = useSelector((state: RootState) => state.auth.auth);
   useEffect(() => {
-    console.log({auth})
-    console.log("jimam")
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
 

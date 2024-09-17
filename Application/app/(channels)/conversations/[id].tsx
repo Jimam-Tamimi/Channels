@@ -17,17 +17,21 @@ import Avatar from "@/components/utils/Avater";
 import { Ionicons } from "@expo/vector-icons";
 import Input from "@/components/utils/Input";
 import { Controller, useForm } from "react-hook-form";
-import Animated from "react-native-reanimated";
+import { Animated } from "react-native";
+
 import { Image } from "expo-image";
 import useWebSocketHandler from "@/hooks/webSocketHandler";
-import { useWebSocket } from "@/context/WebSocketContext";
-import { MessageType } from "@/api-calls/channels";
+import {
+  fetchMessagesForConversation,
+  MessageType,
+} from "@/api-calls/channels";
 import { useMessagesByConversation } from "@/hooks/channels";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import moment from "moment";
 import uuid from "react-native-uuid";
 import { useQueryClient } from "react-query";
+import { useWebSocket } from "@/context/WebSocketContext";
 
 const formatTimestamp = (timestamp: string) => {
   const now = moment();
@@ -63,16 +67,13 @@ function isDifferenceMoreThan15Minutes(timestamp1: string, timestamp2: string) {
 function replaceObjectById(array: MessageType[], newObject: MessageType) {
   const index = array.findIndex(
     (item) =>
-      (item.uuid && newObject.uuid && item.uuid === newObject.uuid) ||
+      (item?.uuid && newObject?.uuid && item?.uuid === newObject?.uuid) ||
       item.id === newObject.id
   );
 
   if (index !== -1) {
     // Replace the object at the found index
     array.splice(index, 1, newObject);
-  } else {
-    // If the object with the same ID is not found, you can optionally push the new object
-    array.push(newObject);
   }
   return array;
 }
@@ -104,61 +105,110 @@ function Chat() {
     };
   }, []);
 
-  const handleChatMessage = useCallback((data: any) => {
+  const handleDeliverMessage = useCallback((data: any) => {
     setMessages((prevState) => {
       const newState = [...replaceObjectById(prevState, data?.message)];
-      queryClient.setQueryData(
-        ["messages-for-conversation", local?.id],
-        (oldMessages: any) => {
-          return [...newState];
-        }
-      );
+      if (socket) {
+        socket.send(
+          JSON.stringify({
+            type: "message_seen",
+            message_id: data?.message?.id,
+          })
+        );
+      }
+      queryClient.setQueryData(["messages-for-conversation", local?.id], () => {
+        return [...newState];
+      });
       return [...newState];
     });
   }, []);
-  useWebSocketHandler("send_message", handleChatMessage, false);
+  useWebSocketHandler("deliver_message", handleDeliverMessage, true);
+
+  const handleMessageDelivered = useCallback((data: any) => {
+    setMessages((prevState) => {
+      const newState = [...replaceObjectById(prevState, data?.message)];
+
+      queryClient.setQueryData(["messages-for-conversation", local?.id], () => {
+        return [...newState];
+      });
+      return [...newState];
+    });
+  }, []);
+  useWebSocketHandler("message_delivered", handleMessageDelivered, true);
+
+  const handleMessageSeen = useCallback((data: any) => {
+    setMessages((prevState) => {
+      const newState = [...replaceObjectById(prevState, data?.message)];
+
+      queryClient.setQueryData(["messages-for-conversation", local?.id], () => {
+        return [...newState];
+      });
+      return [...newState];
+    });
+  }, []);
+  useWebSocketHandler("message_seen", handleMessageSeen, true);
+
+  const bulk_messages_seen = useCallback((data: any) => {
+    setMessages((prevState) => {
+      const newState = prevState.map(item1 => {
+        const matchingItem = data?.messages.find(item2 => item2.id === item1.id);
+        return matchingItem ? matchingItem : item1;
+      }); 
+      queryClient.setQueryData(["messages-for-conversation", local?.id], () => {
+        return [...newState];
+      });
+      return [...newState];
+    });
+  }, []);
+  useWebSocketHandler("bulk_messages_seen", bulk_messages_seen, true);
 
   // Handle WebSocket messages regardless of screen focus
 
   const { socket } = useWebSocket();
   const local = useLocalSearchParams();
-  console.log({local});
+  console.log({ local });
   const {
     data: fetchedMessagesByConversation,
     isLoading,
     isError,
     error,
-  } = useMessagesByConversation(local?.id as any);
+  } = useMessagesByConversation(local?.id as any, (data) => {
+    setMessages([...data]);
+    if (socket && data.reverse().some((message) => message.status !== "SEEN")) {
+      socket.send(
+        JSON.stringify({
+          type: "all_messages_seen",
+          conversation_id: local?.id,
+        })
+      );
+    }
+
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: false });
+    }, 1);
+  });
   const myProfileId = useSelector(
     (state: RootState) => state.auth.auth?.profile?.id
   );
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (fetchedMessagesByConversation) {
-      console.log(fetchedMessagesByConversation[0]?.timestamp);
-      setMessages([...fetchedMessagesByConversation]);
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: false });
-      }, 1);
-
-    }
-
-    return () => {};
-  }, [fetchedMessagesByConversation]);
- 
-  const onSend = (data: any) => {
+  const onSend = useCallback((data: any) => {
     try {
       if (!data?.text) {
         return;
       }
-      reset();
 
       const messageUuid = uuid.v4();
       data["uuid"] = messageUuid;
       data["conversation_id"] = local?.id;
 
       if (socket) {
+        socket.send(
+          JSON.stringify({
+            type: "send_message",
+            message_data: data,
+          })
+        );
         setMessages((prevState) => [
           ...prevState,
           {
@@ -172,21 +222,18 @@ function Chat() {
             status: "PENDING",
           } as any,
         ]);
-
-
         setTimeout(
           () => scrollViewRef.current?.scrollToEnd({ animated: true }),
           1
         );
-
-        socket.send(JSON.stringify(data));
+        reset();
       } else {
         console.error("Socket not initialized or message/channelId is empty");
       }
     } catch (error) {
       console.error("Error in onSend:", error);
     }
-  };
+  }, []);
 
   return (
     <>
@@ -196,7 +243,7 @@ function Chat() {
       >
         <Image
           contentFit="cover"
-          source={require("../../assets/images/New folder/1.jpg")}
+          source={require("../../../assets/images/New folder/1.jpg")}
           // source={require("../../assets/images/New folder/4.jpg")}
 
           style={[
@@ -254,8 +301,10 @@ function Chat() {
                 <View
                   className={`
                 ${
-                  messages[i]?.sender !== myProfileId &&
-                  messages[i + 1]?.sender === myProfileId
+                  (messages[i]?.sender !== myProfileId &&
+                    messages?.length === i + 1) ||
+                  (messages[i]?.sender !== myProfileId &&
+                    messages[i + 1]?.sender === myProfileId)
                     ? "visible"
                     : "invisible"
                 }
@@ -267,6 +316,7 @@ function Chat() {
                     isActive
                   />
                 </View>
+
                 <View
                   style={{
                     backgroundColor:
@@ -322,7 +372,14 @@ function Chat() {
                     {formatTimestamp(message?.timestamp)}
                   </Text>
                 </View>
-                {message?.status === "SEEN" ? (
+                <MessageIcon
+                  i={i}
+                  message={message}
+                  messages={messages}
+                  myProfileId={myProfileId}
+                />
+
+                {/* {message?.status === "SEEN" &&  message?.sender === myProfileId ? (
                   <View
                     className={`${
                       messages[i + 1]?.status === "SEEN" && "invisible"
@@ -357,7 +414,7 @@ function Chat() {
                       }`}
                     />
                   </View>
-                )}
+                )} */}
               </View>
 
               {i + 1 != messages?.length &&
@@ -419,3 +476,92 @@ function Chat() {
   );
 }
 export default Chat;
+const MessageIcon = ({ message, myProfileId, i, messages }: any) => {
+  const [currentIcon, setCurrentIcon] = useState("");
+  const iconScaleAnim = useRef(new Animated.Value(0)).current;
+  const avatarScaleAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Trigger icon animation first
+    Animated.timing(iconScaleAnim, {
+      toValue: 0, // Scale down to 0 first (disappear)
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      // After scaling down, change the icon
+      setCurrentIcon(getIconName(message?.status));
+
+      // Then, scale it up to 1 (appear)
+      Animated.timing(iconScaleAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    });
+  }, [message]);
+
+  useEffect(() => {
+    // Trigger avatar animation only if the status is "SEEN"
+    if (
+      (message?.status !== "SEEN" && message?.sender === myProfileId) ||
+      (message?.length !== i + 1 && messages[i + 1]?.status === "SEEN")
+    ) {
+      Animated.timing(avatarScaleAnim, {
+        toValue: 0, // Scale up to 1 (appear)
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(avatarScaleAnim, {
+        toValue: 1, // Scale down to 0 (disappear)
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [messages]);
+
+  const getIconName = (status: string) => {
+    switch (status) {
+      case "SENT":
+        return "checkmark-done-circle-outline";
+      case "DELIVERED":
+        return "checkmark-done-circle";
+      case "PENDING":
+        return "ellipsis-horizontal-circle-outline";
+      default:
+        return "alert-circle-outline";
+    }
+  };
+
+  return (
+    <>
+      {message?.status === "SEEN" && message?.sender === myProfileId ? (
+        <Animated.View
+          style={{
+            transform: [{ scale: avatarScaleAnim }],
+          }}
+        >
+          <Avatar
+            uri="https://randomuser.me/api/portraits/men/32.jpg"
+            size={14}
+            borderLess
+          />
+        </Animated.View>
+      ) : (
+        <Animated.View
+          style={{
+            width: 14,
+            height: 14,
+            transform: [{ scale: iconScaleAnim }],
+          }}
+        >
+          <Ionicons
+            name={currentIcon as any}
+            size={14}
+            color={message?.sender === myProfileId ? "white" : "transparent"}
+          />
+        </Animated.View>
+      )}
+    </>
+  );
+};

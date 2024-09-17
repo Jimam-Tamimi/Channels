@@ -16,7 +16,7 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Link, Redirect, router } from "expo-router";
 import Button from "@/components/utils/Button";
 import Input from "@/components/utils/Input";
@@ -42,6 +42,7 @@ import AppleStyleSwipeableRow from "@/components/drawer/SwipeAbleRow";
 import { useAuthRedirect } from "@/hooks/auth";
 import useWebSocketHandler from "@/hooks/webSocketHandler";
 import { useConversation, useConversations } from "@/hooks/channels";
+import { useWebSocket } from "@/context/WebSocketContext";
 export default function Home() {
   useEffect(() => {
     setTimeout(() => {
@@ -77,10 +78,6 @@ export default function Home() {
 
   const [messages, setMessages] = useState<string[]>([]);
 
- 
-  
-  
-
 
 
   const { data: conversations, isLoading, isError, error } = useConversations();
@@ -90,7 +87,7 @@ export default function Home() {
       <View style={{ paddingHorizontal: 15, flex: 1 }}>
         <Image
           contentFit="cover"
-          source={require("../../assets/images/New folder/9.jpg")}
+          source={require("../../../assets/images/New folder/9.jpg")}
           // source={require("../../assets/images/New folder/4.jpg")}
 
           style={[

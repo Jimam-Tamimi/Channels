@@ -7,7 +7,7 @@ import {
 import { useFonts } from "expo-font";
 import { router, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "react-native-reanimated";
 import "../assets/global.css";
 import { QueryClient, QueryClientProvider } from "react-query";
@@ -23,17 +23,15 @@ import {
   ZoomInDownZoomOutUp,
 } from "react-native-notificated";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { WebSocketProvider } from "@/context/WebSocketContext";
+import { useWebSocket, WebSocketProvider } from "@/context/WebSocketContext";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistor, store } from "@/redux/store";
+import useWebSocketHandler from "@/hooks/webSocketHandler";
 
 // Ignore all log notifications
 LogBox.ignoreAllLogs();
-export const unstable_settings = {
-  initialRouteName: "(drawer)",
-};
-
+ 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
@@ -73,6 +71,10 @@ export default function Layout() {
         },
       },
     });
+    
+  
+
+
 
   return (
     <Provider store={store}>
@@ -83,15 +85,11 @@ export default function Layout() {
               <QueryClientProvider client={queryClient}>
                 <Stack  screenOptions={{ headerShown: false,  }}>
                   <Stack.Screen
-                    name="(drawer)"
+                    name="(channels)/(drawer)"
                     options={{ headerShown: false }}
                   />
                   <Stack.Screen name="auth" options={{ headerShown: false }} />
-                  <Stack.Screen
-                    name="conversations"
-                    options={{ headerShown: false,  }}
-                    
-                  />
+              
                 </Stack>
               </QueryClientProvider>
             </NotificationsProvider>

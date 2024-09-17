@@ -42,7 +42,6 @@ const MessageInput = ({ socket, conversationId,  onSendMessage }: MessageInputPr
       reset();
       socket.send(JSON.stringify(messageData));
     } else {
-      console.error('Socket not initialized or message/channelId is empty');
     }
   };
 

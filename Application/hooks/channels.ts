@@ -1,4 +1,4 @@
-import {  fetchConversationById, fetchConversations, fetchMessageById,  fetchMessagesForConversation } from "@/api-calls/channels";
+import {  fetchConversationById, fetchConversations, fetchMessageById,  fetchMessagesForConversation, MessageType } from "@/api-calls/channels";
 import { useQuery } from "react-query";
 
 export const useConversations = () => {
@@ -14,10 +14,9 @@ export const useMessage = (id: number|null) => {
 };
 
 // Custom hook for fetching messages by conversation ID
-export const useMessagesByConversation = (conversationId: number) => {
+export const useMessagesByConversation = (conversationId: number, onSuccess : (data: MessageType[]) => void) => {
   return useQuery(['messages-for-conversation', conversationId], () => fetchMessagesForConversation(conversationId), {
     enabled: !!conversationId, // Only run the query if a conversationId is provided
-    staleTime: Infinity, // Prevent refetching
-    // cacheTime: Infinity, // Cache forever
+    onSuccess: onSuccess
   });
 };
