@@ -166,7 +166,6 @@ function Chat() {
 
   const { socket } = useWebSocket();
   const local = useLocalSearchParams();
-  console.log({ local });
   const {
     data: fetchedMessagesByConversation,
     isLoading,
@@ -228,10 +227,8 @@ function Chat() {
         );
         reset();
       } else {
-        console.error("Socket not initialized or message/channelId is empty");
       }
     } catch (error) {
-      console.error("Error in onSend:", error);
     }
   }, []);
 
@@ -498,7 +495,7 @@ const MessageIcon = ({ message, myProfileId, i, messages }: any) => {
         useNativeDriver: true,
       }).start();
     });
-  }, [message]);
+  }, [message?.status]);
 
   useEffect(() => {
     // Trigger avatar animation only if the status is "SEEN"

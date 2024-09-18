@@ -1,5 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
 
+from channels_app.filters import ConversationFilter
 from channels_app.permissions import IsConversationParticipant
 from .models import Conversation, Message
 from .serializers import  ConversationSerializer, MessageSerializer
@@ -7,11 +8,47 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.pagination import PageNumberPagination
 
+
+
+class ConversationPagination(PageNumberPagination):
+    page_size = 12  # Customize page size
+    page_size_query_param = 'page_size'  # Allow client to control page size
+    max_page_size = 100  # Maximum page size limit
+    def get_paginated_response(self, data):
+        # Get the original paginated response
+        response = super().get_paginated_response(data)
+        
+        # Modify the `next` and `previous` fields to contain only page numbers
+        if response.data.get('next'):
+            # Extract the page number from the full URL
+            next_url = response.data['next']
+            page_number = self.extract_page_number(next_url)
+            response.data['next'] = page_number
+        
+        if response.data.get('previous'):
+            # Extract the page number from the full URL
+            prev_url = response.data['previous']
+            page_number = self.extract_page_number(prev_url)
+            response.data['previous'] = page_number
+        
+        return response
+
+    def extract_page_number(self, url):
+        # Extract the page number from the URL
+        from urllib.parse import urlparse, parse_qs
+        parsed_url = urlparse(url)
+        page_number = parse_qs(parsed_url.query).get('page', [None])[0]
+        return page_number
 class ConversationViewSet(ModelViewSet):
     queryset = Conversation.objects.all()
     serializer_class = ConversationSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ConversationFilter
+    pagination_class = ConversationPagination
 
     def get_queryset(self):
         user_profile = self.request.user.profile

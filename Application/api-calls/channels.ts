@@ -24,8 +24,8 @@ export interface MessageType {
   status: "PENDING" | "SENT" | "DELIVERED" | "SEEN";
 }
 
-export const fetchConversations = async (): Promise<ConversationType[]> => {
-  const response = await api.get("/channels/conversations/"); // Adjust the endpoint as necessary
+export const fetchConversations = async (pageParam: number): Promise<ConversationType[]> => {
+  const response = await api.get(`/channels/conversations/?page=${pageParam}`);
   return response.data;
 };
 

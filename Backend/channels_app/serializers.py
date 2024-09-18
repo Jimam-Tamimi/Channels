@@ -16,7 +16,7 @@ class MessageSerializer(serializers.ModelSerializer):
 
 class ConversationSerializer(serializers.ModelSerializer):
     last_message = serializers.IntegerField(source='last_message.id', read_only=True)
-    name = serializers.SerializerMethodField()
+    # name = serializers.SerializerMethodField()
 
     class Meta:
         model = Conversation
@@ -24,22 +24,22 @@ class ConversationSerializer(serializers.ModelSerializer):
         read_only_fields = [ 'timestamp', ]
 
             
-    def get_name(self, obj):
-        """Returns the conversation name or randomly fetches up to three first names for group conversations."""
-        if obj.name:
-            return obj.name
+    # def get_name(self, obj):
+    #     """Returns the conversation name or randomly fetches up to three first names for group conversations."""
+    #     if obj.name:
+    #         return obj.name
 
-        if obj.is_group:
-            # Fetch up to 3 random profiles from the database without loading all profiles
-            random_profiles = obj.profiles.order_by('?').values_list('first_name', flat=True)[:3]
-            return ', '.join(random_profiles) or "Group Conversation"
+    #     if obj.is_group:
+    #         # Fetch up to 3 random profiles from the database without loading all profiles
+    #         random_profiles = obj.profiles.order_by('?').values_list('first_name', flat=True)[:3]
+    #         return ', '.join(random_profiles) or "Group Conversation"
 
-        # For one-on-one chats, exclude the current user's profile
-        request = self.context.get('request')
-        if request and hasattr(request, 'user'):
-            other_profile_name = obj.profiles.exclude(user=request.user).values_list('first_name', flat=True).first()
-            if other_profile_name:
-                return other_profile_name
+    #     # For one-on-one chats, exclude the current user's profile
+    #     request = self.context.get('request')
+    #     if request and hasattr(request, 'user'):
+    #         other_profile_name = obj.profiles.exclude(user=request.user).values_list('first_name', flat=True).first()
+    #         if other_profile_name:
+    #             return other_profile_name
 
-        return "Unknown"
+    #     return "Unknown"
         

@@ -96,7 +96,6 @@ const Conversation: React.FC<ConversationType> = (props: ConversationType) => {
           borderRadius: 2,
           paddingVertical: 9,
           paddingHorizontal: 10,
-          marginVertical:5
         },
       ]}
     >
