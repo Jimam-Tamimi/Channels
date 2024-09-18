@@ -24,10 +24,11 @@ export interface MessageType {
   status: "PENDING" | "SENT" | "DELIVERED" | "SEEN";
 }
 
-export const fetchConversations = async (pageParam: number): Promise<ConversationType[]> => {
-  const response = await api.get(`/channels/conversations/?page=${pageParam}`);
-  return response.data;
-};
+
+export interface MessageResponseDataType {
+  message: MessageType; // Ensure message type exists in data
+  pages: { results: MessageType[] }[]; // Each page has a results array with MessageType[]
+}
 
 export const fetchConversationById = async (
   id: number
@@ -38,7 +39,7 @@ export const fetchConversationById = async (
 
 export const fetchMessageById = async (
   id: number | null
-): Promise<MessageType | null> => {
+): Promise<MessageResponseDataType | null> => {
   if (id) {
     const response = await api.get(`/channels/messages/${id}/`);
     return response.data;
@@ -46,11 +47,18 @@ export const fetchMessageById = async (
     return null;
   }
 };
+
+
+export const fetchConversations = async (pageParam: number, searchQuery?:string): Promise<ConversationType[]> => {
+  const response = await api.get(`/channels/conversations/?page=${pageParam}&search=${searchQuery?searchQuery:''}`);
+  return response.data;
+};
 export const fetchMessagesForConversation = async (
-  id: number | null
+  id: number | null,
+  pageParam: number,
 ): Promise<MessageType[] | null> => {
   if (id) {
-    const response = await api.get(`/channels/messages/messages-for-conversation/${id}/`);
+    const response = await api.get(`/channels/messages/messages-for-conversation/${id}/?page=${pageParam}`);
     return response.data;
   } else {
     return null;

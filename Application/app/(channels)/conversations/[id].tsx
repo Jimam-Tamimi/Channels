@@ -3,7 +3,9 @@ import { Link, useLocalSearchParams } from "expo-router";
 import { StyleSheet } from "nativewind";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Dimensions,
+  FlatList,
   Keyboard,
   KeyboardAvoidingView,
   ScrollView,
@@ -30,7 +32,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import moment from "moment";
 import uuid from "react-native-uuid";
-import { useQueryClient } from "react-query";
+import { InfiniteData, useQueryClient } from "react-query";
 import { useWebSocket } from "@/context/WebSocketContext";
 
 const formatTimestamp = (timestamp: string) => {
@@ -74,14 +76,16 @@ function replaceObjectById(array: MessageType[], newObject: MessageType) {
   if (index !== -1) {
     // Replace the object at the found index
     array.splice(index, 1, newObject);
+    console.log({arrayBefore: array})
+    return array
+  } else {    
+    return [newObject, ...array];
   }
-  return array;
 }
 
 function Chat() {
   const [messages, setMessages] = useState<MessageType[]>([]);
   // for send message
-  const scrollViewRef = useRef<ScrollView>(null);
 
   const {
     control,
@@ -89,78 +93,102 @@ function Chat() {
     reset,
     formState: { errors },
   } = useForm();
+  const queryClient = useQueryClient();
 
   // Scroll to bottom when keyboard is shown
-  useEffect(() => {
-    // scroll to bottom after messages are loaded
-    const keyboardDidShowListener = Keyboard.addListener(
-      "keyboardDidShow",
-      () => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }
-    );
+ 
+  function updatePaginatedDataWithMessage(
+    oldData: InfiniteData<any> | undefined,
+    newMessage: MessageType
+  ): InfiniteData<any> | undefined {
+    if (!oldData) return oldData; // If there's no old data, return it as is
+    
+    // Update the correct page where the message should be located
+    console.log({newMessage})
+    console.log({old: oldData.pages[0].results})
+    const updatedPages = oldData.pages.map((page: any) => {
+      // Check if the message belongs in this page (based on the message ID)
+      const updatedMessages = replaceObjectById(page.results, newMessage);
+      console.log({updatedMessages})
+      return { ...page, results: updatedMessages };
+    });
 
-    return () => {
-      keyboardDidShowListener.remove(); // Cleanup the event listener
+    // Return the updated structure
+    console.log({new: updatedPages[0].results})
+    return {
+      ...oldData,
+      pages: updatedPages,
     };
-  }, []);
+  }
+  const handleDeliverMessage = useCallback(
+    (data: any) => {
+      setMessages((prevState) => {
+        const newState = [...replaceObjectById(prevState, data?.message)];
 
-  const handleDeliverMessage = useCallback((data: any) => {
-    setMessages((prevState) => {
-      const newState = [...replaceObjectById(prevState, data?.message)];
-      if (socket) {
-        socket.send(
-          JSON.stringify({
-            type: "message_seen",
-            message_id: data?.message?.id,
-          })
+        if (socket) {
+          socket.send(
+            JSON.stringify({
+              type: "message_seen",
+              message_id: data?.message?.id,
+            })
+          );
+        }
+        queryClient.setQueryData(
+          ["messages-for-conversation"],
+          (oldData: any) => {
+            return updatePaginatedDataWithMessage(oldData, data?.message);
+          }
         );
-      }
-      queryClient.setQueryData(["messages-for-conversation", local?.id], () => {
+
         return [...newState];
       });
-      return [...newState];
-    });
-  }, []);
+    },
+    [queryClient, local?.id, socket]
+  );
   useWebSocketHandler("deliver_message", handleDeliverMessage, true);
 
-  const handleMessageDelivered = useCallback((data: any) => {
+  const updateMessageData = useCallback((data: any) => {
     setMessages((prevState) => {
       const newState = [...replaceObjectById(prevState, data?.message)];
-
-      queryClient.setQueryData(["messages-for-conversation", local?.id], () => {
-        return [...newState];
-      });
+      queryClient.setQueryData(
+        ["messages-for-conversation"],
+        (oldData: any) => {
+          
+          console.log("oldData")
+          console.log(oldData.pages[0].results)
+          console.log(updatePaginatedDataWithMessage(oldData, data?.message).pages[0].results)
+          return updatePaginatedDataWithMessage(oldData, data?.message);
+        }
+      );
       return [...newState];
     });
-  }, []);
-  useWebSocketHandler("message_delivered", handleMessageDelivered, true);
-
-  const handleMessageSeen = useCallback((data: any) => {
-    setMessages((prevState) => {
-      const newState = [...replaceObjectById(prevState, data?.message)];
-
-      queryClient.setQueryData(["messages-for-conversation", local?.id], () => {
-        return [...newState];
-      });
-      return [...newState];
-    });
-  }, []);
-  useWebSocketHandler("message_seen", handleMessageSeen, true);
+  },
+  [queryClient, local?.id, socket]
+);
+  useWebSocketHandler("message_delivered", updateMessageData, true);
+  useWebSocketHandler("message_seen", updateMessageData, true);
 
   const bulk_messages_seen = useCallback((data: any) => {
+    const newMessages = data?.pages.flatMap((page) => page.results) ?? [];
+
     setMessages((prevState) => {
-      const newState = prevState.map(item1 => {
-        const matchingItem = data?.messages.find(item2 => item2.id === item1.id);
+      const newState = prevState.map((item1) => {
+        const matchingItem = newMessages.find((item2) => item2.id === item1.id);
         return matchingItem ? matchingItem : item1;
-      }); 
-      queryClient.setQueryData(["messages-for-conversation", local?.id], () => {
-        return [...newState];
       });
+      queryClient.setQueryData(
+        ["messages-for-conversation"],
+        (oldData: any) => {
+          return updatePaginatedDataWithMessage(oldData, data?.message);
+        }
+      );
       return [...newState];
     });
-  }, []);
-  useWebSocketHandler("bulk_messages_seen", bulk_messages_seen, true);
+  },
+  [queryClient, local?.id, socket]
+  
+);
+  // useWebSocketHandler("bulk_messages_seen", bulk_messages_seen, true);
 
   // Handle WebSocket messages regardless of screen focus
 
@@ -170,26 +198,49 @@ function Chat() {
     data: fetchedMessagesByConversation,
     isLoading,
     isError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     error,
   } = useMessagesByConversation(local?.id as any, (data) => {
-    setMessages([...data]);
-    if (socket && data.reverse().some((message) => message.status !== "SEEN")) {
-      socket.send(
-        JSON.stringify({
-          type: "all_messages_seen",
-          conversation_id: local?.id,
-        })
-      );
-    }
-
-    setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: false });
-    }, 1);
+    console.log('on success run')
   });
+
+
+  useEffect(() => {
+    console.log("local id changed")
+  
+    return () => {
+      
+    }
+  }, [local?.id])
+  
+  
+
+  useEffect(() => {
+    if (fetchedMessagesByConversation) {
+      const recentMessages = fetchedMessagesByConversation?.pages.flatMap((page) => page.results) ?? [];
+      
+      setMessages([...recentMessages]);
+      if (
+        socket &&
+        recentMessages?.reverse().some((message) => message.status !== "SEEN")
+      ) {
+        console.log({ fetchedMessagesByConversation });
+        socket.send(
+          JSON.stringify({
+            type: "all_messages_seen",
+            conversation_id: local?.id,
+          })
+        );
+      }
+    }
+    return () => {};
+  }, [fetchedMessagesByConversation]);
+
   const myProfileId = useSelector(
     (state: RootState) => state.auth.auth?.profile?.id
   );
-  const queryClient = useQueryClient();
 
   const onSend = useCallback((data: any) => {
     try {
@@ -208,35 +259,36 @@ function Chat() {
             message_data: data,
           })
         );
+        const newMessage = {
+          uuid: messageUuid,
+          text: data?.text,
+          sender: myProfileId,
+          conversation: data?.conversation_id,
+          timestamp: new Date(),
+          seen_by: [],
+          delivered_to: [],
+          status: "PENDING",
+        } as any
         setMessages((prevState) => [
+          newMessage,
           ...prevState,
-          {
-            uuid: messageUuid,
-            text: data?.text,
-            sender: myProfileId,
-            conversation: data?.conversation_id,
-            timestamp: new Date(),
-            seen_by: [],
-            delivered_to: [],
-            status: "PENDING",
-          } as any,
         ]);
-        setTimeout(
-          () => scrollViewRef.current?.scrollToEnd({ animated: true }),
-          1
+        queryClient.setQueryData(
+          ["messages-for-conversation"],
+          (oldData: any) => {
+            return updatePaginatedDataWithMessage(oldData, newMessage);
+          }
         );
         reset();
       } else {
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   }, []);
 
   return (
     <>
       <View
-        className="flex-1 "
-        style={{ paddingTop: useHeaderHeight(), borderWidth: 4 }}
+        style={{ paddingTop: useHeaderHeight(), borderWidth: 4, flex:1, height:Dimensions.get('window').height }}
       >
         <Image
           contentFit="cover"
@@ -266,12 +318,25 @@ function Chat() {
           ]}
         ></View>
 
-        <ScrollView
-          ref={scrollViewRef}
-          contentContainerStyle={{ gap: 4, paddingVertical: 20 }}
-        >
-          {messages.map((message, i) => (
+        <FlatList
+          onEndReached={({distanceFromEnd }) => {
+            if (hasNextPage  ) {
+              console.log("has next page run")
+              fetchNextPage();
+            }
+          }}
+          inverted
+          data={messages}
+          contentContainerStyle={{gap:5,   paddingVertical: 10}}
+          keyExtractor={(item, i) => i}
+          initialNumToRender={messages?.length}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={() =>
+            isFetchingNextPage ? <ActivityIndicator size="large" /> : null
+          }
+          renderItem={({ item: message, index: i }) => (
             <View
+              key={i}
               style={{
                 marginBottom:
                   messages[i]?.sender !== myProfileId &&
@@ -288,24 +353,24 @@ function Chat() {
             >
               <View
                 className={`flex-row items-end
-                ${
-                  message?.sender === myProfileId
-                    ? "justify-end gap-0.5"
-                    : "justify-start gap-2.5 "
-                }
-                `}
+              ${
+                message?.sender === myProfileId
+                  ? "justify-end gap-0.5"
+                  : "justify-start gap-2.5 "
+              }
+              `}
               >
                 <View
                   className={`
-                ${
-                  (messages[i]?.sender !== myProfileId &&
-                    messages?.length === i + 1) ||
-                  (messages[i]?.sender !== myProfileId &&
-                    messages[i + 1]?.sender === myProfileId)
-                    ? "visible"
-                    : "invisible"
-                }
-                `}
+              ${
+                (messages[i]?.sender !== myProfileId &&
+                  messages?.length === i + 1) ||
+                (messages[i]?.sender !== myProfileId &&
+                  messages[i + 1]?.sender === myProfileId)
+                  ? "visible"
+                  : "invisible"
+              }
+              `}
                 >
                   <Avatar
                     uri="https://randomuser.me/api/portraits/men/32.jpg"
@@ -353,7 +418,7 @@ function Chat() {
                 >
                   <Text
                     className={`   leading-6 tracking-wider text-white
-                    `}
+                  `}
                   >
                     {message?.text}
                   </Text>
@@ -377,41 +442,41 @@ function Chat() {
                 />
 
                 {/* {message?.status === "SEEN" &&  message?.sender === myProfileId ? (
-                  <View
-                    className={`${
-                      messages[i + 1]?.status === "SEEN" && "invisible"
+                <View
+                  className={`${
+                    messages[i + 1]?.status === "SEEN" && "invisible"
+                  }`}
+                >
+                  <Avatar
+                    uri="https://randomuser.me/api/portraits/men/32.jpg"
+                    size={14}
+                    borderLess
+                  />
+                </View>
+              ) : (
+                <View style={{ width: 14, height: 14 }}>
+                  <Ionicons
+                    name={`${
+                      message?.status === "SENT"
+                        ? "checkmark-done-circle-outline"
+                        : message?.status === "DELIVERED"
+                        ? "checkmark-done-circle"
+                        : message?.status === "PENDING"
+                        ? "ellipsis-horizontal-circle-outline"
+                        : "alert-circle-outline"
                     }`}
-                  >
-                    <Avatar
-                      uri="https://randomuser.me/api/portraits/men/32.jpg"
-                      size={14}
-                      borderLess
-                    />
-                  </View>
-                ) : (
-                  <View style={{ width: 14, height: 14 }}>
-                    <Ionicons
-                      name={`${
-                        message?.status === "SENT"
-                          ? "checkmark-done-circle-outline"
-                          : message?.status === "DELIVERED"
-                          ? "checkmark-done-circle"
-                          : message?.status === "PENDING"
-                          ? "ellipsis-horizontal-circle-outline"
-                          : "alert-circle-outline"
-                      }`}
-                      size={14}
-                      color={`${
-                        // message?.status === "failed"
-                        false
-                          ? "red"
-                          : message?.sender === myProfileId
-                          ? "white"
-                          : "transparent"
-                      }`}
-                    />
-                  </View>
-                )} */}
+                    size={14}
+                    color={`${
+                      // message?.status === "failed"
+                      false
+                        ? "red"
+                        : message?.sender === myProfileId
+                        ? "white"
+                        : "transparent"
+                    }`}
+                  />
+                </View>
+              )} */}
               </View>
 
               {i + 1 != messages?.length &&
@@ -434,9 +499,8 @@ function Chat() {
                 ""
               )}
             </View>
-          ))}
-        </ScrollView>
-
+          )}
+        />
         <View>
           <Controller
             control={control}
