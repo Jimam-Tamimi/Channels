@@ -29,7 +29,6 @@ export const useMessage = (id: number | null) => {
 // Custom hook for fetching messages by conversation ID
 export const useMessagesByConversation = (
   conversationId: number,
-  onSuccess: (data: InfiniteData<MessageType[]>) => void
 ) => {
   console.log({conversationId})
   return useInfiniteQuery(
@@ -38,9 +37,8 @@ export const useMessagesByConversation = (
       fetchMessagesForConversation(conversationId, pageParam), // Fetch conversations based on pageParam (pagination)
     {
       getNextPageParam: (lastPage) =>
-        lastPage.next ? lastPage.next : undefined, // Determine the next page
+        lastPage?.next ? lastPage?.next : undefined, // Determine the next page
       enabled: !!conversationId, // Only run the query if a conversationId is provided
-      onSuccess: onSuccess,
       refetchOnMount: false,
     }
   );

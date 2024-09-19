@@ -14,11 +14,11 @@ import { useHeaderHeight } from "@react-navigation/elements";
 import { Image } from "expo-image";
 import { MaterialIcons, FontAwesome6, Entypo } from "@expo/vector-icons";
 import Animated, { interpolateColor, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
-import Conversation from "@/components/drawer/Conversation";
-import AppleStyleSwipeableRow from "@/components/drawer/SwipeAbleRow";
 import { useConversations } from "@/hooks/channels";
 import Input from "@/components/utils/Input";
 import { useDebounce } from "@/hooks/useDebounce";
+import AppleStyleSwipeableRow from "@/components/(channels)/drawer/SwipeAbleRow";
+import Conversation from "@/components/(channels)/drawer/Conversation";
 
 type FormValues = {
   search: string;
@@ -37,7 +37,7 @@ export default function Home() {
   const debouncedSearchQuery = useDebounce(searchQuery, 1000);
 
   // Fetch conversations with debounced search term
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useConversations(debouncedSearchQuery);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status, isFetching } = useConversations(debouncedSearchQuery);
   const conversations = data?.pages.flatMap((page) => page.results) ?? [];
 
   const frame = useSafeAreaFrame();
@@ -101,7 +101,9 @@ export default function Home() {
                 paddingLeft: 5,
               }}
               leftElement={<MaterialIcons name="person-search" size={20} color={"white"} />}
-              rightElement={watch("search")?
+              rightElement={
+                isFetching  && watch("search")? <ActivityIndicator size="small" color={"white"} /> :
+                watch("search")?
                 <MaterialIcons style={{left:7}} name="clear" onPress={() => setValue('search', '')} size={24} color={"white"} />: <></>}
                 
               onChangeText={onChange}

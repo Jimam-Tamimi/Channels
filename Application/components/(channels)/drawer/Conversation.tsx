@@ -1,6 +1,6 @@
 import { View, Text, Pressable } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
-import Avatar from "../utils/Avater";
+import Avatar from "../../utils/Avater";
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -120,7 +120,7 @@ const Conversation: React.FC<ConversationType> = (props: ConversationType) => {
           uri={
             props?.image
               ? props?.image
-              : require("../../assets/images/blank profile.png")
+              : require("../../../assets/images/blank profile.png")
           }
           size={53}
           isActive
@@ -140,7 +140,7 @@ const Conversation: React.FC<ConversationType> = (props: ConversationType) => {
                   uri={
                     props?.image
                       ? props?.image
-                      : require("../../assets/images/blank profile.svg")
+                      : require("../../../assets/images/blank profile.svg")
                   }
                   size={15}
                   borderLess

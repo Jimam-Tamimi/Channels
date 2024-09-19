@@ -25,8 +25,8 @@ export interface MessageType {
 }
 
 
-export interface MessageResponseDataType {
-  message: MessageType; // Ensure message type exists in data
+export interface PaginatedMessagesDataType {
+  // pageParams: undefined[] | number[]; // Ensure message type exists in data
   pages: { results: MessageType[] }[]; // Each page has a results array with MessageType[]
 }
 
@@ -39,7 +39,7 @@ export const fetchConversationById = async (
 
 export const fetchMessageById = async (
   id: number | null
-): Promise<MessageResponseDataType | null> => {
+): Promise<PaginatedMessagesDataType | null> => {
   if (id) {
     const response = await api.get(`/channels/messages/${id}/`);
     return response.data;
@@ -56,7 +56,7 @@ export const fetchConversations = async (pageParam: number, searchQuery?:string)
 export const fetchMessagesForConversation = async (
   id: number | null,
   pageParam: number,
-): Promise<MessageType[] | null> => {
+): Promise<PaginatedMessagesDataType | null> => {
   if (id) {
     const response = await api.get(`/channels/messages/messages-for-conversation/${id}/?page=${pageParam}`);
     return response.data;
