@@ -40,7 +40,6 @@ export const updatePaginatedDataWithNewMessage = (
     if (index !== -1) {
       // Replace the object at the found index
       array.splice(index, 1, newObject);
-      console.log({ arrayBefore: array });
       return array;
     } else {
       return [newObject, ...array];

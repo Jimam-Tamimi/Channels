@@ -1,43 +1,70 @@
-import { View, Text } from "react-native";
-import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import React, { useEffect } from "react";
+import Avatar from "@/components/utils/Avater";
+import MessageIcon from "./MessageStatus";
+import {
+  formatTimestamp,
+  isDifferenceMoreThan15Minutes,
+} from "@/helpers/channels";
 
-export default function Message() {
+export default function Message({ messages, myProfileId, i, message, socket }) {
+  useEffect(() => {
+    if (
+      myProfileId &&
+      message?.sender !== myProfileId &&
+      !message?.seen_by.includes(myProfileId)
+    ) {
+      if (socket) {
+        socket.send(
+          JSON.stringify({
+            type: "message_seen",
+            message_id: message?.id,
+          })
+        );
+      }
+    }
+
+    return () => {};
+  }, []);
+
+  const isSenderMyProfile = message?.sender === myProfileId;
+  const prevMessage = messages[i - 1];
+  const nextMessage = messages[i + 1];
+
   return (
     <View
-      key={i}
-      style={{
-        marginBottom:
-          messages[i]?.sender !== myProfileId &&
-          messages[i + 1]?.sender === myProfileId
-            ? 10
-            : 0,
-        marginTop:
-          messages[i]?.sender !== myProfileId &&
-          messages[i - 1]?.sender === myProfileId
-            ? 10
-            : 0,
-      }}
-      key={i}
+      style={[
+        styles.messageContainer,
+        {
+          marginTop:
+            !isSenderMyProfile && nextMessage?.sender === myProfileId ? 10 : 0,
+          marginBottom:
+            !isSenderMyProfile &&
+            (prevMessage?.sender === myProfileId || i === 0)
+              ? 10
+              : 0,
+        },
+      ]}
     >
       <View
-        className={`flex-row items-end
-          ${
-            message?.sender === myProfileId
-              ? "justify-end gap-0.5"
-              : "justify-start gap-2.5 "
-          }
-        `}
+        style={[
+          styles.messageWrapper,
+          {
+            justifyContent: isSenderMyProfile ? "flex-end" : "flex-start",
+          },
+        ]}
       >
         <View
-          className={`
-              ${
-                (messages[i]?.sender !== myProfileId && messages?.length === i + 1) ||
-                (messages[i]?.sender !== myProfileId &&
-                  messages[i + 1]?.sender === myProfileId)
-                  ? "visible"
-                  : "invisible"
-              }
-          `}
+          style={[
+            styles.avatarContainer,
+            {
+              opacity:
+                (!isSenderMyProfile && messages?.length === i + 1) ||
+                (!isSenderMyProfile && nextMessage?.sender === myProfileId)
+                  ? 1
+                  : 0,
+            },
+          ]}
         >
           <Avatar
             uri="https://randomuser.me/api/portraits/men/32.jpg"
@@ -47,55 +74,38 @@ export default function Message() {
         </View>
 
         <View
-          style={{
-            backgroundColor:
-              message?.sender === myProfileId ? "#5660e762" : "#ff004c70",
-
-            borderBottomLeftRadius:
-              (messages[i]?.sender !== myProfileId &&
-                messages[i + 1]?.sender === myProfileId) ||
-              messages[i]?.sender === myProfileId
-                ? 10
-                : 0,
-            borderTopLeftRadius:
-              (messages[i]?.sender !== myProfileId &&
-                (messages[i - 1]?.sender === myProfileId || i == 0)) ||
-              messages[i]?.sender === myProfileId
-                ? 10
-                : 0,
-            borderBottomRightRadius:
-              messages[i]?.sender === myProfileId &&
-              messages[i + 1]?.sender !== myProfileId
-                ? 10
-                : messages[i]?.sender !== myProfileId
-                ? 10
-                : 0,
-            borderTopRightRadius:
-              messages[i]?.sender === myProfileId &&
-              messages[i - 1]?.sender !== myProfileId
-                ? 10
-                : messages[i]?.sender !== myProfileId
-                ? 10
-                : 0,
-            maxWidth: "80%",
-          }}
-          className="px-3 py-2 "
+          style={[
+            styles.messageBubble,
+            {
+              backgroundColor: isSenderMyProfile ? "#5660e762" : "#ff004c70",
+              borderTopStartRadius:
+                (!isSenderMyProfile && nextMessage?.sender === myProfileId) ||
+                isSenderMyProfile
+                  ? 10
+                  : 0,
+              borderBottomLeftRadius:
+                (!isSenderMyProfile &&
+                  (prevMessage?.sender === myProfileId || i === 0)) ||
+                isSenderMyProfile
+                  ? 10
+                  : 0,
+              borderTopEndRadius:
+                isSenderMyProfile && nextMessage?.sender !== myProfileId
+                  ? 10
+                  : !isSenderMyProfile
+                  ? 10
+                  : 0,
+              borderBottomRightRadius:
+                isSenderMyProfile && prevMessage?.sender !== myProfileId
+                  ? 10
+                  : !isSenderMyProfile
+                  ? 10
+                  : 0,
+            },
+          ]}
         >
-          <Text
-            className={`   leading-6 tracking-wider text-white
-      `}
-          >
-            {message?.text}
-          </Text>
-          <Text
-            style={{
-              fontSize: 11,
-              fontWeight: "400",
-              letterSpacing: 0.5,
-              textAlign: "right",
-            }}
-            className="text-white "
-          >
+          <Text style={styles.messageText}>{message?.text}</Text>
+          <Text style={styles.timestamp}>
             {formatTimestamp(message?.timestamp)}
           </Text>
         </View>
@@ -105,64 +115,57 @@ export default function Message() {
           messages={messages}
           myProfileId={myProfileId}
         />
-
-        {/* {message?.status === "SEEN" &&  message?.sender === myProfileId ? (
-    <View
-      className={`${
-        messages[i + 1]?.status === "SEEN" && "invisible"
-      }`}
-    >
-      <Avatar
-        uri="https://randomuser.me/api/portraits/men/32.jpg"
-        size={14}
-        borderLess
-      />
-    </View>
-  ) : (
-    <View style={{ width: 14, height: 14 }}>
-      <Ionicons
-        name={`${
-          message?.status === "SENT"
-            ? "checkmark-done-circle-outline"
-            : message?.status === "DELIVERED"
-            ? "checkmark-done-circle"
-            : message?.status === "PENDING"
-            ? "ellipsis-horizontal-circle-outline"
-            : "alert-circle-outline"
-        }`}
-        size={14}
-        color={`${
-          // message?.status === "failed"
-          false
-            ? "red"
-            : message?.sender === myProfileId
-            ? "white"
-            : "transparent"
-        }`}
-      />
-    </View>
-  )} */}
       </View>
 
-      {i + 1 != messages?.length &&
+      {i + 1 !== messages?.length &&
       isDifferenceMoreThan15Minutes(
         message?.timestamp,
-        messages[i + 1]?.timestamp
+        prevMessage?.timestamp
       ) ? (
-        <Text
-          style={{
-            fontSize: 12,
-            fontWeight: "400",
-            marginVertical: 20,
-            letterSpacing: 0.5,
-          }}
-          className="text-center text-white "
-        >
-          {formatTimestamp(messages[i + 1].timestamp)}
+        <Text style={styles.timestampSeparator}>
+          {formatTimestamp(prevMessage?.timestamp)}
         </Text>
-      ) : (
-        ""
-      )}
+      ) : null}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  messageContainer: {
+    marginBottom: 0,
+    marginTop: 0,
+  },
+  messageWrapper: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 2.5,
+  },
+  avatarContainer: {
+    // style for avatar container
+  },
+  messageBubble: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    maxWidth: "80%",
+  },
+  messageText: {
+    color: "white",
+    lineHeight: 18,
+    letterSpacing: 0.5,
+  },
+  timestamp: {
+    fontSize: 11,
+    fontWeight: "400",
+    letterSpacing: 0.5,
+    textAlign: "right",
+    color: "white",
+  },
+  timestampSeparator: {
+    fontSize: 12,
+    fontWeight: "400",
+    marginVertical: 20,
+    letterSpacing: 0.5,
+    textAlign: "center",
+    color: "white",
+  },
+});

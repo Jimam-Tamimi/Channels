@@ -30,7 +30,6 @@ export const useMessage = (id: number | null) => {
 export const useMessagesByConversation = (
   conversationId: number,
 ) => {
-  console.log({conversationId})
   return useInfiniteQuery(
     ["messages-for-conversation", conversationId],
     ({ pageParam = 1 }) =>

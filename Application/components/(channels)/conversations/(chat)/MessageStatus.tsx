@@ -60,6 +60,10 @@ const MessageIcon = ({ message, myProfileId, i, messages }: any) => {
     }
   };
 
+  if(message?.sender !== myProfileId){
+    return <></>
+  }
+  
   return (
     <>
       {message?.status === "SEEN" && message?.sender === myProfileId ? (

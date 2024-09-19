@@ -82,32 +82,7 @@ function Chat() {
   );
   useWebSocketHandler("message_delivered", updateMessagesForConversationCache, true);
   useWebSocketHandler("message_seen", updateMessagesForConversationCache, true);
-
-  // const bulk_messages_seen = useCallback(
-  //   (data: any) => {
-  //     const newMessages = data?.pages.flatMap((page) => page.results) ?? [];
-
-  //     setMessages((prevState) => {
-  //       const newState = prevState.map((item1) => {
-  //         const matchingItem = newMessages.find(
-  //           (item2) => item2.id === item1.id
-  //         );
-  //         return matchingItem ? matchingItem : item1;
-  //       });
-  //       queryClient.setQueryData(
-  //         ["messages-for-conversation"],
-  //         (oldData: any) => {
-  //           return updatePaginatedDataWithMessage(oldData, data?.message);
-  //         }
-  //       );
-  //       return [...newState];
-  //     });
-  //   },
-  //   [queryClient, local?.id, socket]
-  // );
-  // useWebSocketHandler("bulk_messages_seen", bulk_messages_seen, true);
-
-  // Handle WebSocket messages regardless of screen focus
+ 
 
   return (
     <>
@@ -182,8 +157,6 @@ function Chat() {
         </View> */}
 
         <MessageInput
-          paginatedMessagesData={paginatedMessagesData}
-          setPaginatedMessagesData={setPaginatedMessagesData}
         />
       </View>
     </>
